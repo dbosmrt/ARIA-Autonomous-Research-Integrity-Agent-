@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ARIA System Architecture</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --surface: #ffffff;
+      --text: #172033;
+      --muted: #5d6b82;
+      --border: #d8dee9;
+      --accent: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    header .wrap {
+      padding: 28px 0 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 4vw, 2.7rem);
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 760px;
+      font-size: 1rem;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 16px 0 0;
+    }
+
+    nav a {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--accent);
+      background: #fbfcff;
+      padding: 7px 10px;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    main {
+      padding: 28px 0 52px;
+    }
+
+    section {
+      margin: 0 0 28px;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: 0 12px 32px rgba(23, 32, 51, 0.05);
+      overflow: auto;
+    }
+
+    h2 {
+      margin: 0 0 6px;
+      font-size: 1.2rem;
+      letter-spacing: 0;
+    }
+
+    .note {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .mermaid {
+      min-width: 720px;
+      padding: 10px;
+    }
+
+    @media (max-width: 760px) {
+      .wrap {
+        width: min(100% - 24px, 1180px);
+      }
+
+      section {
+        padding: 16px;
+      }
+
+      .mermaid {
+        min-width: 620px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>ARIA System Architecture</h1>
+      <p class="subtitle">Rendered Mermaid diagrams from <code>system_architecture.md</code>. Use the section links to jump between the service map, graph orchestration, agents, tools, cloud integrations, state flow, and lifecycle.</p>
+      <nav aria-label="Architecture sections">
+        <a href="#master">Master Map</a>
+        <a href="#server">FastAPI Server</a>
+        <a href="#graph">LangGraph Core</a>
+        <a href="#nodes">Agent Nodes</a>
+        <a href="#tools">Tools</a>
+        <a href="#cloud">Google Cloud</a>
+        <a href="#state">Shared State</a>
+        <a href="#lifecycle">Lifecycle</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="master">
+      <h2>1. Master Component Map</h2>
+      <p class="note">Top-level dependency flow across the FastAPI server, LangGraph engine, agents, cloud services, and tools.</p>
+      <pre class="mermaid">
+graph LR
+    subgraph ENTRY["FastAPI Server"]
+        MAIN["main.py"]
+    end
+
+    subgraph ENGINE["LangGraph Engine"]
+        GRAPH["graph.py"]
+    end
+
+    subgraph AGENTS["Agent Nodes"]
+        NODES["9 specialist nodes"]
+    end
+
+    subgraph INFRA["Google Cloud"]
+        GCP["Gemini · Agent Builder · Secret Manager · Logging"]
+    end
+
+    subgraph TOOLS["Tool Layer"]
+        TL["GitLab · Stats · Search · Chemistry · KG"]
+    end
+
+    ENTRY -->|"imports graph.compile_graph()"| ENGINE
+    ENGINE -->|"registers all node functions"| AGENTS
+    AGENTS -->|"call tool functions"| TOOLS
+    AGENTS -->|"invoke Gemini LLMs"| INFRA
+    TOOLS -->|"call external APIs"| INFRA
+    ENTRY -->|"setup_logging()"| INFRA
+      </pre>
+    </section>
+
+    <section id="server">
+      <h2>2. FastAPI Server File Interactions</h2>
+      <p class="note">HTTP request flow through route handlers, schemas, validators, parsers, logging, and graph invocation.</p>
+      <pre class="mermaid">
+graph TD
+    CLIENT(("Client / Browser"))
+
+    subgraph SERVER["app/server/api/"]
+        MAIN["main.py<br/><i>FastAPI app factory</i>"]
+        HEALTH["routes/health.py<br/><i>GET /health</i>"]
+        PAPERS["routes/papers.py<br/><i>POST /papers/upload</i>"]
+        ANALYSIS["routes/analysis.py<br/><i>POST /analysis/run<br/>GET /analysis/{id}/status<br/>GET /analysis/{id}/report</i>"]
+        SCHEMAS["schemas/paper.py<br/><i>Pydantic request/response</i>"]
+    end
+
+    subgraph SOURCE["app/server/source/"]
+        VALID["data_validation.py<br/><i>PDF/MD validators</i>"]
+        PARSER["pdf_parser.py<br/><i>pymupdf4llm wrapper</i>"]
+    end
+
+    subgraph AGENT_PKG["agent/"]
+        LOGCFG["logging_config.py"]
+        GRAPHPY["graph.py"]
+    end
+
+    CLIENT -->|"HTTP requests"| MAIN
+    MAIN -->|"include_router()"| HEALTH
+    MAIN -->|"include_router()"| PAPERS
+    MAIN -->|"include_router()"| ANALYSIS
+    MAIN -->|"lifespan -> setup_logging()"| LOGCFG
+
+    HEALTH -->|"imports HealthResponse"| SCHEMAS
+    PAPERS -->|"imports PaperUploadResponse"| SCHEMAS
+    ANALYSIS -->|"imports AnalysisRequest/Response/Status"| SCHEMAS
+
+    ANALYSIS -->|"BackgroundTask -> compile_graph()"| GRAPHPY
+    PAPERS -.->|"validates uploaded file"| VALID
+    PAPERS -.->|"could parse PDF on upload"| PARSER
+      </pre>
+    </section>
+
+    <section id="graph">
+      <h2>3. LangGraph Orchestration Core</h2>
+      <p class="note">How <code>graph.py</code> wires the sequential path, conditional parallel fan-out, retry loop, and report generation.</p>
+      <pre class="mermaid">
+graph TD
+    subgraph GRAPH_FILE["graph.py - StateGraph Builder"]
+        STATE_IMPORT["imports ARIAState<br/>from state.py"]
+        BUILD["build_graph()"]
+        COMPILE["compile_graph()"]
+    end
+
+    subgraph SEQUENTIAL["Sequential Pipeline"]
+        ING["ingestion.py"]
+        CLAIM["claim_extractor.py"]
+        ORCH["orchestrator.py<br/><i>Router Node</i>"]
+    end
+
+    subgraph PARALLEL["Parallel Fan-out<br/>(conditional on active_agents)"]
+        REPRO["repro_checker.py"]
+        STATS["stats_agent.py"]
+        LIT["literature_agent.py"]
+        KG["kg_agent.py"]
+        GITLAB["gitlab_sandbox.py"]
+        WETLAB["wetlab_agent.py"]
+    end
+
+    subgraph CONVERGENCE["Convergence"]
+        JUDGE["judge.py"]
+        REPORT["report_generator.py"]
+    end
+
+    BUILD -->|"set_entry_point"| ING
+    ING -->|"add_edge"| CLAIM
+    CLAIM -->|"add_edge"| ORCH
+    ORCH -->|"add_conditional_edges<br/>_route_to_agents()"| REPRO
+    ORCH -->|"conditional"| STATS
+    ORCH -->|"conditional"| LIT
+    ORCH -->|"conditional"| KG
+    ORCH -->|"conditional"| GITLAB
+    ORCH -->|"conditional"| WETLAB
+    REPRO -->|"add_edge"| JUDGE
+    STATS -->|"add_edge"| JUDGE
+    LIT -->|"add_edge"| JUDGE
+    KG -->|"add_edge"| JUDGE
+    GITLAB -->|"add_edge"| JUDGE
+    WETLAB -->|"add_edge"| JUDGE
+    JUDGE -->|"_should_retry() -> retry"| ORCH
+    JUDGE -->|"_should_retry() -> generate_report"| REPORT
+    REPORT -->|"add_edge"| END_NODE(("END"))
+
+    style ORCH fill:#e8f5e9,stroke:#2e7d32
+    style JUDGE fill:#fff3e0,stroke:#e65100
+    style GITLAB fill:#fce4ec,stroke:#c62828
+      </pre>
+    </section>
+
+    <section id="nodes">
+      <h2>4. Agent Node Dependencies</h2>
+      <p class="note">The shared import pattern for model factories, state types, and prompt templates.</p>
+      <pre class="mermaid">
+graph LR
+    subgraph SHARED["Shared Infrastructure"]
+        LLM["llm.py<br/><i>get_gemini_pro()<br/>get_gemini_flash()</i>"]
+        STATE["state.py<br/><i>ARIAState<br/>AgentResult<br/>AuditEntry</i>"]
+    end
+
+    subgraph PROMPTS["prompts/"]
+        P_CLAIM["claim_extraction.py"]
+        P_METH["methodology_review.py"]
+        P_STAT["statistical_review.py"]
+        P_JUDGE["judge_rubric.py"]
+        P_CI["gitlab_ci_gen.py"]
+        P_RPT["report_template.py"]
+    end
+
+    subgraph NODES["nodes/"]
+        N_ING["ingestion.py"]
+        N_CLM["claim_extractor.py"]
+        N_REP["repro_checker.py"]
+        N_STA["stats_agent.py"]
+        N_LIT["literature_agent.py"]
+        N_KG["kg_agent.py"]
+        N_GL["gitlab_sandbox.py"]
+        N_WL["wetlab_agent.py"]
+        N_JDG["judge.py"]
+        N_RPT["report_generator.py"]
+    end
+
+    N_ING -->|"ARIAState, AuditEntry"| STATE
+
+    N_CLM -->|"get_gemini_flash()"| LLM
+    N_CLM -->|"ARIAState, AuditEntry"| STATE
+    N_CLM -->|"CLAIM_EXTRACTION_*"| P_CLAIM
+
+    N_REP -->|"get_gemini_pro()"| LLM
+    N_REP -->|"AgentResult, AuditEntry"| STATE
+    N_REP -->|"METHODOLOGY_REVIEW_*"| P_METH
+
+    N_STA -->|"get_gemini_flash()"| LLM
+    N_STA -->|"AgentResult, AuditEntry"| STATE
+    N_STA -->|"STATISTICAL_REVIEW_*"| P_STAT
+
+    N_LIT -->|"get_gemini_flash()"| LLM
+    N_LIT -->|"AgentResult, AuditEntry"| STATE
+
+    N_KG -->|"get_gemini_flash()"| LLM
+    N_KG -->|"AgentResult, AuditEntry"| STATE
+
+    N_GL -->|"get_gemini_pro()"| LLM
+    N_GL -->|"AgentResult, AuditEntry"| STATE
+    N_GL -->|"GITLAB_CI_GEN_*"| P_CI
+
+    N_WL -->|"get_gemini_flash()"| LLM
+    N_WL -->|"AgentResult, AuditEntry"| STATE
+
+    N_JDG -->|"get_gemini_pro()"| LLM
+    N_JDG -->|"AgentResult, AuditEntry"| STATE
+    N_JDG -->|"JUDGE_RUBRIC_*"| P_JUDGE
+
+    N_RPT -->|"get_gemini_flash()"| LLM
+    N_RPT -->|"AuditEntry"| STATE
+    N_RPT -->|"REPORT_TEMPLATE_*"| P_RPT
+
+    style LLM fill:#e3f2fd,stroke:#1565c0
+    style STATE fill:#f3e5f5,stroke:#6a1b9a
+      </pre>
+    </section>
+
+    <section id="tools">
+      <h2>5. Nodes And Tools</h2>
+      <p class="note">Runtime tool calls made by specialist agent nodes and the external services behind those tools.</p>
+      <pre class="mermaid">
+graph LR
+    subgraph NODES["Agent Nodes"]
+        N_STA["stats_agent.py"]
+        N_LIT["literature_agent.py"]
+        N_KG["kg_agent.py"]
+        N_GL["gitlab_sandbox.py"]
+        N_WL["wetlab_agent.py"]
+    end
+
+    subgraph TOOLS["tools/"]
+        T_STATS["stats_tools.py<br/><i>detect_p_hacking<br/>compute_power<br/>validate_test</i>"]
+        T_SEARCH["search_tools.py<br/><i>semantic_scholar_search<br/>tavily_search</i>"]
+        T_KG["kg_tools.py<br/><i>add_triple<br/>find_contradictions</i>"]
+        T_GL["gitlab_tools.py<br/><i>create_project<br/>create_file<br/>trigger_pipeline<br/>poll_pipeline<br/>create_issue</i>"]
+        T_CHEM["chemistry_tools.py<br/><i>pubchem_lookup<br/>chembl_search</i>"]
+    end
+
+    subgraph EXTERNAL["External Services"]
+        SCIPY["scipy / numpy"]
+        SS["Semantic Scholar API"]
+        TAVILY["Tavily API"]
+        NX["NetworkX graph"]
+        GLAPI["GitLab API<br/><i>python-gitlab</i>"]
+        GIT["git clone<br/><i>GitPython</i>"]
+        PCHEM["PubChem API<br/><i>pubchempy</i>"]
+        CHEMBL["ChEMBL API"]
+    end
+
+    N_STA -->|"detect_p_hacking()"| T_STATS
+    N_LIT -->|"semantic_scholar_search()"| T_SEARCH
+    N_KG -->|"add_triple(), find_contradictions()"| T_KG
+    N_GL -->|"create_project(), create_file(),<br/>trigger_pipeline(), poll_pipeline(),<br/>create_issue()"| T_GL
+    N_GL -->|"git.Repo.clone_from()"| GIT
+    N_WL -->|"pubchem_lookup()"| T_CHEM
+
+    T_STATS -->|"scipy.stats"| SCIPY
+    T_SEARCH -->|"httpx GET"| SS
+    T_SEARCH -->|"TavilyClient"| TAVILY
+    T_KG -->|"nx.MultiDiGraph"| NX
+    T_GL -->|"gitlab.Gitlab()"| GLAPI
+    T_CHEM -->|"pcp.get_compounds()"| PCHEM
+    T_CHEM -->|"new_client.activity"| CHEMBL
+
+    style T_GL fill:#fce4ec,stroke:#c62828
+    style GLAPI fill:#fce4ec,stroke:#c62828
+      </pre>
+    </section>
+
+    <section id="cloud">
+      <h2>6. Google Cloud Integration Points</h2>
+      <p class="note">Project files that call Gemini, Agent Builder RAG, Secret Manager, and Cloud Logging.</p>
+      <pre class="mermaid">
+graph TD
+    subgraph GCP["Google Cloud Platform"]
+        GEMINI["Gemini 2.5 Pro / Flash<br/><i>langchain-google-genai</i>"]
+        AB["Agent Builder RAG<br/><i>vertexai.rag</i>"]
+        SM["Secret Manager<br/><i>google.cloud.secretmanager</i>"]
+        CL["Cloud Logging<br/><i>StructuredLogHandler</i>"]
+    end
+
+    subgraph FILES["Project Files"]
+        LLM["agent/llm.py"]
+        LIT["agent/nodes/literature_agent.py"]
+        CFG["agent/config.py"]
+        LOG["agent/logging_config.py"]
+        DOTENV[".env / .env.example"]
+    end
+
+    LLM -->|"ChatGoogleGenerativeAI(model=...)"| GEMINI
+    LIT -->|"vertexai.init() -> rag.retrieval_query()"| AB
+    CFG -->|"client.access_secret_version()"| SM
+    CFG -->|"fallback: load_dotenv()"| DOTENV
+    LOG -->|"StructuredLogHandler()"| CL
+    LOG -->|"fallback: RichHandler()"| DOTENV
+
+    LLM -.->|"_get_api_key() -> os.getenv"| CFG
+
+    style GEMINI fill:#e8f5e9,stroke:#2e7d32
+    style AB fill:#e3f2fd,stroke:#1565c0
+    style SM fill:#fff3e0,stroke:#e65100
+    style CL fill:#f3e5f5,stroke:#6a1b9a
+      </pre>
+    </section>
+
+    <section id="state">
+      <h2>7. Shared State Data Bus</h2>
+      <p class="note">Fields in <code>ARIAState</code> that each graph node writes or reads during execution.</p>
+      <pre class="mermaid">
+graph TD
+    subgraph STATE["ARIAState (TypedDict in state.py)"]
+        IN["Input Fields<br/><i>paper_id, raw_text,<br/>sections, metadata</i>"]
+        EXT["Extraction Fields<br/><i>claims, github_url,<br/>active_agents, paper_type</i>"]
+        RES["Agent Result Fields<br/><i>methodology_verdict<br/>stats_verdict<br/>code_verdict<br/>literature_evidence<br/>kg_contradictions<br/>wetlab_verdict<br/>agent_results +</i>"]
+        AGG["Aggregation Fields<br/><i>retry_count<br/>confidence_score</i>"]
+        OUT["Output Fields<br/><i>final_report<br/>audit_trail +</i>"]
+    end
+
+    ING["ingestion"] -->|"writes"| IN
+    ING -->|"writes github_url"| EXT
+    CLM["claim_extractor"] -->|"writes claims"| EXT
+    ORC["orchestrator"] -->|"writes active_agents, paper_type"| EXT
+    REPRO["repro_checker"] -->|"writes methodology_verdict"| RES
+    STATS["stats_agent"] -->|"writes stats_verdict"| RES
+    LITAG["literature_agent"] -->|"writes literature_evidence"| RES
+    KGAG["kg_agent"] -->|"writes kg_contradictions"| RES
+    GLAB["gitlab_sandbox"] -->|"writes code_verdict"| RES
+    WLAB["wetlab_agent"] -->|"writes wetlab_verdict"| RES
+    REPRO -->|"+ appends"| RES
+    STATS -->|"+ appends"| RES
+    LITAG -->|"+ appends"| RES
+    KGAG -->|"+ appends"| RES
+    GLAB -->|"+ appends"| RES
+    WLAB -->|"+ appends"| RES
+    JDG["judge"] -->|"reads agent_results<br/>writes confidence_score"| AGG
+    RPT["report_generator"] -->|"reads everything<br/>writes final_report"| OUT
+
+    style RES fill:#e8f5e9,stroke:#2e7d32
+    style STATE fill:#fafafa,stroke:#333
+      </pre>
+    </section>
+
+    <section id="lifecycle">
+      <h2>8. Full Request Lifecycle</h2>
+      <p class="note">End-to-end sequence from upload through background graph execution and final report retrieval.</p>
+      <pre class="mermaid">
+sequenceDiagram
+    actor User
+    participant API as main.py<br/>FastAPI
+    participant Papers as routes/papers.py
+    participant Analysis as routes/analysis.py
+    participant Graph as graph.py<br/>compile_graph()
+    participant Ingestion as nodes/ingestion.py
+    participant Claims as nodes/claim_extractor.py
+    participant Router as orchestrator.py
+    participant Repro as nodes/repro_checker.py
+    participant Stats as nodes/stats_agent.py
+    participant Lit as nodes/literature_agent.py
+    participant KG as nodes/kg_agent.py
+    participant Judge as nodes/judge.py
+    participant Report as nodes/report_generator.py
+    participant Gemini as Gemini API
+    participant GitLab as GitLab API
+
+    User->>API: POST /papers/upload (PDF)
+    API->>Papers: route to handler
+    Papers-->>User: {paper_id}
+
+    User->>API: POST /analysis/run {paper_id}
+    API->>Analysis: route to handler
+    Analysis-->>User: {analysis_id, status: "queued"}
+    Analysis->>Graph: BackgroundTask -> compile_graph().invoke()
+
+    Graph->>Ingestion: parse PDF/JSON
+    Ingestion-->>Graph: sections, metadata, github_url
+
+    Graph->>Claims: extract claims
+    Claims->>Gemini: Flash -> structured extraction
+    Gemini-->>Claims: JSON claims list
+    Claims-->>Graph: claims[]
+
+    Graph->>Router: classify paper
+    Router->>Gemini: Flash -> paper classification
+    Gemini-->>Router: {paper_type, active_agents}
+    Router-->>Graph: active_agents[]
+
+    par Parallel Fan-out
+        Graph->>Repro: repro check
+        Repro->>Gemini: Pro -> 8-dimension review
+        Gemini-->>Repro: MethodologyVerdict
+        and
+        Graph->>Stats: stats validation
+        Stats->>Gemini: Flash -> extract p-values
+        and
+        Graph->>Lit: literature search
+        Lit->>Gemini: Flash -> stance classify
+        and
+        Graph->>KG: knowledge graph
+        KG->>Gemini: Flash -> extract triples
+    end
+
+    Repro-->>Graph: agent_results +
+    Stats-->>Graph: agent_results +
+    Lit-->>Graph: agent_results +
+    KG-->>Graph: agent_results +
+
+    Graph->>Judge: aggregate
+    Judge->>Gemini: Pro -> weighted rubric
+    Gemini-->>Judge: verdict + confidence
+
+    alt confidence < 0.5 AND retries < 3
+        Judge-->>Graph: retry -> back to Router
+    else confidence >= 0.5 OR max retries
+        Graph->>Report: generate report
+        Report->>Gemini: Flash -> narrative
+        Report-->>Graph: final_report{}
+    end
+
+    User->>API: GET /analysis/{id}/status
+    API->>Analysis: lookup job store
+    Analysis-->>User: {status: "completed", result: {...}}
+      </pre>
+    </section>
+  </main>
+
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+    mermaid.initialize({
+      startOnLoad: true,
+      securityLevel: "loose",
+      theme: "base",
+      themeVariables: {
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        primaryColor: "#eef4ff",
+        primaryTextColor: "#172033",
+        primaryBorderColor: "#7aa2f7",
+        lineColor: "#61708a",
+        secondaryColor: "#f8fafc",
+        tertiaryColor: "#ffffff",
+        clusterBkg: "#f8fafc",
+        clusterBorder: "#cbd5e1"
+      }
+    });
+  </script>
+</body>
+</html>
