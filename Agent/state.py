@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 class ClaimType(str, Enum):
     EMPIRICAL = "empirical"
     THEORITICAL = "theoritical"
+    EXPERIMENTAL= "experimental"
     COMPUTATIONAL = "computational"
     METHODOLOGICAL = "methodological"
 
@@ -264,4 +265,3 @@ class ReprCheckState(TypedDict):
     # ── Output ──
     final_report: dict  # ReproducibilityReport as dict
     audit_trail: Annotated[list, operator.add]
-

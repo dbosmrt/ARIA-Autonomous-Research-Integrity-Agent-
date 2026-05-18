@@ -30,7 +30,7 @@ CLAIM_EXTRACTION_HUMAN = """Analyze the following research paper sections and ex
 Return a JSON list of claims. Each claim must have:
 - claim_id: a unique identifier (e.g., "C1", "C2", ...)
 - claim_text: the precise claim statement
-- claim_type: one of ["empirical", "theoretical", "computational", "methodological"]
+- claim_type: one of ["empirical", "theoretical", "experimental" "computational", "methodological"]
 - section_source: which section it came from
 - evidence_strength: one of ["direct", "indirect", "inferred"]
 - supporting_text: the original text from the paper that supports this claim"""
