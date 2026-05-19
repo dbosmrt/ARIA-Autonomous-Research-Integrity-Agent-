@@ -9,7 +9,16 @@ Uses two models:
 
 import os
 from functools import lru_cache
+from pathlib import Path
 from langchain_google_genai import ChatGoogleGenerativeAI
+
+try:
+    from dotenv import load_dotenv
+    # Load .env file from project root
+    env_path = Path(__file__).parent.parent / ".env"
+    load_dotenv(env_path)
+except ImportError:
+    pass
 
 def _get_api_key() -> str:
 

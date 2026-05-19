@@ -4,7 +4,7 @@ This Denifes the contract between every agent node in the system.
 """
 from __future__ import annotations
 import operator
-from datetime import datetime
+from datetime import datetime, timezone 
 from enum import Enum
 from typing import Annotated, Literal, Optional, TypedDict
 from pydantic import BaseModel, Field
@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 # Enums
 class ClaimType(str, Enum):
     EMPIRICAL = "empirical"
-    THEORITICAL = "theoritical"
+    THEORETICAL = "theoretical"
     EXPERIMENTAL= "experimental"
     COMPUTATIONAL = "computational"
     METHODOLOGICAL = "methodological"
@@ -54,6 +54,12 @@ class Claim(BaseModel):
     section_source: str  # which section this came from
     evidence_strength: EvidenceStrength
     supporting_text: str = ""  # original text from paper  
+    numerical_values: list[str] = Field(default_factory=list)
+    controls_present: Optional[bool] = None
+    blinding_reported: Optional[bool] = None
+    biological_replicates_stated: Optional[bool] = None
+    qrp_flags: list[str] = Field(default_factory=list)
+    confidence: str = ""
 
 #Agent Result Models
 class DimensionScore(BaseModel):
@@ -143,12 +149,12 @@ class AgentResult(BaseModel):
     confidence: float = Field(ge=0, le=1, default=0)
     summary: str = ""
     details: dict = Field(default_factory=dict)
-    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 class AuditEntry(BaseModel):
     """An entry in the audit trail (logged to Cloud Logging)."""
-    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     agent: str
     action: str
     details: str = ""
@@ -225,7 +231,7 @@ class ReproducibilityReport(BaseModel):
 
     audit_trail: list[AuditEntry] = Field(default_factory=list)
     generated_at: str = Field(
-        default_factory=lambda: datetime.utcnow().isoformat()
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
 
 # LangGraph Shared State
@@ -235,21 +241,22 @@ class ReprCheckState(TypedDict):
     Every node reads from and writes to this state.
     `agent_results` uses Annotated[list, operator.add] for parallel fan-in.
     """
-    # ── Input ──
+    # Input
     paper_id: str
     raw_text: str
     sections: dict  # {section_name: text}
     metadata: dict  # PaperMetadata as dict
 
-    # ── Extraction ──
+    #  Extraction 
     claims: list  # list of Claim dicts
+    paper_meta: dict #LLM output : research paradigm, subsdiscipline, paper section.
     github_url: str
 
-    # ── Routing ──
+    # Routing
     active_agents: list  # which agents to activate
     paper_type: str  # "computational", "experimental", "theoretical", etc.
 
-    # ── Agent Results (fan-in via operator.add) ──
+    #  Agent Results (fan-in via operator.add)
     agent_results: Annotated[list, operator.add]
     methodology_verdict: dict
     stats_verdict: dict
@@ -258,10 +265,10 @@ class ReprCheckState(TypedDict):
     kg_contradictions: list
     wetlab_verdict: dict
 
-    # ── Aggregation ──
+    # Aggregation 
     retry_count: int
     confidence_score: float
 
-    # ── Output ──
+    # Output 
     final_report: dict  # ReproducibilityReport as dict
     audit_trail: Annotated[list, operator.add]

@@ -4,7 +4,7 @@ Claim extractor node - Uses Gemini Flash to extract testable scientific claims.
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone 
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -16,12 +16,17 @@ from Agent.prompts.claim_extraction import(
 
 logger = logging.getLogger(__name__)
 
+json_schema = {
+    
+}
+
 def claim_extractor_node(state: ReprCheckState) -> dict:
     logger.info("Extracting claims...")
-    start = datetime.utcnow()
+    start = datetime.now(timezone.utc)
     sections= state.get("sections", {})
     metadata= state.get("metadata",{})
 
+    
     prompt = CLAIM_EXTRACTION_HUMAN.format(
         title=metadata.get("title", "Unknown"),
         abstract= sections.get("abstract", "Not available"),
@@ -36,11 +41,12 @@ def claim_extractor_node(state: ReprCheckState) -> dict:
         HumanMessage(content=prompt),
     ])
 
-    claims = _parse_claims(response.content)
-    elapsed = (datetime.utcnow() - start).total_seconds()*1000
+    claims, paper_meta = _parse_claims(response.content)
+    elapsed = (datetime.now(timezone.utc) - start).total_seconds()*1000
     logger.info(f"Extracted {len(claims)} claims")
     return {
         "claims": claims,
+        "paper_meta": paper_meta,
         "audit_trail": [
             AuditEntry(
                 agent="claim_extractor",
@@ -51,7 +57,7 @@ def claim_extractor_node(state: ReprCheckState) -> dict:
         ],
     }
 
-def _parse_claims(response_text: str) -> list[dict]:
+def _parse_claims(response_text: str) -> tuple[list, dict]:
     try:
         text = response_text.strip()
         if "```json" in text:
@@ -75,4 +81,4 @@ def _parse_claims(response_text: str) -> list[dict]:
         "section_source": "unknown",
         "evidence_strength": "inferred",
         "supporting_text": "",
-    }]
+    }],{}

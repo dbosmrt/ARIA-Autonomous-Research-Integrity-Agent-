@@ -1,0 +1,22 @@
+{
+  "claims": [
+    {
+      "claim_id": "C1",
+      "claim_text": "```json\n{\n  \"paper_section\": \"all\",\n  \"research_paradigm\": \"wet_lab\",\n  \"subdiscipline\": \"molecular_biology\",\n  \"total_claims_extracted\": 39,\n  \"claims\": [\n    {\n      \"claim_id\": \"C1\",\n      \"claim_text\": \"Stem cells with properties similar to Embryonic Stem Cells (ESCs) can be generated from mouse fibroblasts by simultaneously introducing four genes.\",\n      \"claim_type\": \"experimental\",\n      \"section_source\": \"Introduction\",\n      \"evidence_strength\": \"direct\",\n      \"supporting_text\": \"In 2",
+      "claim_type": "empirical",
+      "section_source": "unknown",
+      "evidence_strength": "inferred",
+      "supporting_text": ""
+    }
+  ],
+  "paper_meta": {},
+  "audit_trail": [
+    {
+      "timestamp": "2026-05-19T09:27:37.068486+00:00",
+      "agent": "claim_extractor",
+      "action": "extracted_claims",
+      "details": "Extracted 1 testable claims",
+      "latency_ms": 19978.363999999998
+    }
+  ]
+}
