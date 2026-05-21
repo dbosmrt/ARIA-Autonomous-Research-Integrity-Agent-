@@ -2,83 +2,41 @@
 Claim extractor node - Uses Gemini Flash to extract testable scientific claims.
 """
 
-import json
 import logging
 from datetime import datetime, timezone 
 
 from langchain_core.messages import HumanMessage, SystemMessage
-
 from Agent.llm import get_gemini_flash
-from Agent.state import ReprCheckState, AuditEntry
+from Agent.state import ReprCheckState, ExtractionResult
 from Agent.prompts.claim_extraction import(
     CLAIM_EXTRACTION_SYSTEM, CLAIM_EXTRACTION_HUMAN,
 )
 
 logger = logging.getLogger(__name__)
 
-json_schema = {
-    
-}
-
 def claim_extractor_node(state: ReprCheckState) -> dict:
-    logger.info("Extracting claims...")
     start = datetime.now(timezone.utc)
-    sections= state.get("sections", {})
-    metadata= state.get("metadata",{})
-
+    logger.info("Extracting claims...")
     
-    prompt = CLAIM_EXTRACTION_HUMAN.format(
-        title=metadata.get("title", "Unknown"),
-        abstract= sections.get("abstract", "Not available"),
-        methods=sections.get("methods", "Not available"),
-        results=sections.get("results", "Not available"),
-        discussion=sections.get("discussion", "Not available"),
-    )
-
-    llm = get_gemini_flash()
-    response=llm.invoke([
+    full_text = state.get("raw_text", "")
+    if not full_text:
+        logger.error("raw_text is empty. Make Sure the ingestion Node is running...")
+        return {"claims": [], "paper_meta":{}, "audit_trial": []}
+    
+    llm = get_gemini_flash().with_structured_output(ExtractionResult)
+    response = llm.invoke([
         SystemMessage(content=CLAIM_EXTRACTION_SYSTEM),
-        HumanMessage(content=prompt),
+        HumanMessage(content=CLAIM_EXTRACTION_HUMAN),
+        HumanMessage(content=f"Here is the paper to analyze:\n\n{full_text}"),
     ])
 
-    claims, paper_meta = _parse_claims(response.content)
-    elapsed = (datetime.now(timezone.utc) - start).total_seconds()*1000
-    logger.info(f"Extracted {len(claims)} claims")
+    print(response)
     return {
-        "claims": claims,
-        "paper_meta": paper_meta,
-        "audit_trail": [
-            AuditEntry(
-                agent="claim_extractor",
-                action="extracted_claims",
-                details=f"Extracted {len(claims)} testable claims",
-                latency_ms=elapsed,
-            ).model_dump()
-        ],
+        "claims": response.claims,
+        "paper_meta": {
+            "research_paradigm": response.research_paradigm,
+            "subdiscipline": response.subdiscipline,
+            "paper_section": response.paper_section,
+        },
+        "extraction_result": response.model_dump(),
     }
-
-def _parse_claims(response_text: str) -> tuple[list, dict]:
-    try:
-        text = response_text.strip()
-        if "```json" in text:
-            text = text.split("```json")[1].split("```")[0].strip()
-        elif "```" in text:
-            text = text.split("```")[1].split("```")[0].strip()
-
-        claims = json.loads(text)
-        if isinstance(claims,list):
-            return claims 
-        if isinstance(claims,dict) and "claims" in claims:
-            return claims["claims"]
-    except (json.JSONDecodeError, IndexError):
-        pass
-
-    logger.warning("Could not parse claims as JSON, creating fallback claim")
-    return [{
-        "claim_id": "C1",
-        "claim_text": response_text[:500],
-        "claim_type": "empirical",
-        "section_source": "unknown",
-        "evidence_strength": "inferred",
-        "supporting_text": "",
-    }],{}

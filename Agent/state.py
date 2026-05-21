@@ -62,6 +62,13 @@ class Claim(BaseModel):
     confidence: str = ""
 
 #Agent Result Models
+class ExtractionResult(BaseModel):
+    paper_section:str
+    research_paradigm: str
+    subdiscipline: str 
+    total_claims_extracted: int 
+    claims: list[str]
+    
 class DimensionScore(BaseModel):
     """Score for a single reproducibility dimension."""
     dimension: str
@@ -242,6 +249,7 @@ class ReprCheckState(TypedDict):
     `agent_results` uses Annotated[list, operator.add] for parallel fan-in.
     """
     # Input
+    file_path:str 
     paper_id: str
     raw_text: str
     sections: dict  # {section_name: text}

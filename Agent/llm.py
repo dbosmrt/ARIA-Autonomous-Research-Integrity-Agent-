@@ -45,7 +45,7 @@ def get_gemini_flash() -> ChatGoogleGenerativeAI:
         model="gemini-2.5-flash",
         google_api_key=_get_api_key(),
         temperature=0.1,
-        max_output_tokens=4096,
+        max_output_tokens=10000,
     )
 
 def get_model_for_role(role:str) -> ChatGoogleGenerativeAI:

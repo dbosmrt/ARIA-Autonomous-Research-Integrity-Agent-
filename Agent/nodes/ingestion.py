@@ -1,59 +1,91 @@
 """Takes document in several format and parses them into LLM ingestable format.
 -Currently for the demo purpose I am just gonna make ingestor for .pdf files.
 -Will add other features later.
+
+Ingestion node — loads PDF or Markdown into raw_text in state.
 """
 
-import logging 
-from abc import abstractmethod, ABC
-from typing import List, Any 
+import logging
+from abc import ABC, abstractmethod
+from Agent.state import ReprCheckState
 from langchain_docling.loader import DoclingLoader, ExportType
+from langchain_community.document_loaders import UnstructuredMarkdownLoader
+from datetime import datetime, timezone 
 
 logging.basicConfig(
-    level= logging.INFO,
-    format= "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
-
 logger = logging.getLogger(__name__)
+
 
 class BasicDocumentIngestor(ABC):
     @abstractmethod
-    def load(self, file_path: str) -> List[Any]:
+    def load(self, file_path: str) -> str:  # always returns raw string
         pass
 
-# Inherit from BasicDocumentIngestor
+
 class DoclingIngestor(BasicDocumentIngestor):
     def __init__(self, export_type: ExportType = ExportType.MARKDOWN):
         self.export_type = export_type
-        logger.info("Initialize the Docling Ingestor with Export type MARKDOWN...")
+        logger.info("Initialized DoclingIngestor with export type MARKDOWN")
 
-    # Renamed to load to match the ABC
-    def load(self, file_path:str) -> List[Any]:
-        logger.info(f"Starting to load the pdf document: {file_path}")
+    def load(self, file_path: str) -> str:
+        logger.info(f"Loading PDF: {file_path}")
         try:
-            loader = DoclingLoader(
-                file_path = file_path, # Fixed: removed 'self.'
-                export_type= self.export_type # Fixed: uses the initialized export type
-            )
+            loader = DoclingLoader(file_path=file_path, export_type=self.export_type)
             docs = loader.load()
-            logger.info("Successfully Loaded the pdf file in MARKDOWN format...")
-            return docs
+            raw_text = "\n\n".join(doc.page_content for doc in docs)
+            logger.info("Successfully loaded PDF as markdown text")
+            return raw_text
         except FileNotFoundError:
-            logger.error(f"Could not locate the file path: {file_path}. Please ensure that the file exists.")
-            return []
+            logger.error(f"File not found: {file_path}")
+            return ""
         except Exception as e:
-            logger.error(f"Some Error Occured: {e}. Please Try again. If the error persists put the issue in feedback.")
-            return []
-        
-class DocumentPipeline:
-    def __init__(self, ingestor: BasicDocumentIngestor):
-        self.ingestor = ingestor 
+            logger.error(f"Error loading PDF: {e}")
+            return ""
 
-    def process_batch(self, file_paths:List[Any]) -> List[Any]:
-        all_documents =[]
-        for path in file_paths:
-            docs = self.ingestor.load(path)
-            if docs:
-                all_documents.extend(docs)
-            logger.info(f"Batch Processing is completed. Total Documents Ingested {len(all_documents)}")
-        return all_documents
-           
+
+class MarkDownLoader(BasicDocumentIngestor):
+    def load(self, file_path: str) -> str:  
+        logger.info(f"Loading markdown: {file_path}")
+        try:
+            loader = UnstructuredMarkdownLoader(file_path=file_path, mode="single")
+            docs = loader.load()
+            raw_text = "\n\n".join(doc.page_content for doc in docs)
+            logger.info("Successfully loaded markdown file")
+            return raw_text
+        except FileNotFoundError:
+            logger.error(f"File not found: {file_path}")
+            return ""
+        except Exception as e:
+            logger.error(f"Error loading markdown: {e}")
+            return ""
+
+
+# LangGraph node 
+
+def ingestion_node(state: ReprCheckState) -> dict:
+    """
+    LangGraph node. Reads file_path from state, loads it, returns raw_text.
+    Automatically picks PDF or Markdown loader based on file extension.
+    """
+    start = datetime.now(timezone.utc)
+    file_path = state.get("file_path", "")
+
+    if not file_path:
+        logger.error("No file_path in state")
+        return {"raw_text": ""}
+
+    if file_path.endswith(".pdf"):
+        ingestor = DoclingIngestor()
+    elif file_path.endswith(".md"):
+        ingestor = MarkDownLoader()
+    else:
+        logger.error(f"Unsupported file type: {file_path}")
+        return {"raw_text": ""}
+
+    raw_text = ingestor.load(file_path)
+    elapsed = (datetime.now(timezone.utc)-start).total_seconds()*1000
+    logger.info(f"Ingested {len(raw_text)} characters in {elapsed:.1f}ms")
+    return {"raw_text": raw_text}
