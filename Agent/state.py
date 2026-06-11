@@ -67,7 +67,7 @@ class ExtractionResult(BaseModel):
     research_paradigm: str
     subdiscipline: str 
     total_claims_extracted: int 
-    claims: list[str]
+    claims: list[Claim] 
     
 class DimensionScore(BaseModel):
     """Score for a single reproducibility dimension."""

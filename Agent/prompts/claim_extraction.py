@@ -118,24 +118,49 @@ Return a single valid JSON object. Do not include any text outside the JSON.
   "subdiscipline": "<e.g. immunology, molecular_biology, microbiology, bioinformatics>",
   "total_claims_extracted": <integer>,
   "claims": [
-    "<first claim as a plain standalone sentence>",
-    "<second claim as a plain standalone sentence>",
-    "<third claim as a plain standalone sentence>"
+    {{
+      "claim_id": "claim_1",
+      "claim_text": "The drug reduced tumor size by 40% in mice compared to vehicle controls.",
+      "claim_type": "experimental",
+      "section_source": "results",
+      "evidence_strength": "direct",
+      "supporting_text": "<original text from paper>",
+      "numerical_values": ["40%"],
+      "controls_present": true,
+      "blinding_reported": false,
+      "biological_replicates_stated": true,
+      "qrp_flags": [],
+      "confidence": "high"
+    }},
+    {{
+      "claim_id": "claim_2",
+      "claim_text": "<second standalone claim>",
+      "claim_type": "experimental",
+      "section_source": "results",
+      "evidence_strength": "direct",
+      "supporting_text": "<original text from paper>",
+      "numerical_values": [],
+      "controls_present": true,
+      "blinding_reported": false,
+      "biological_replicates_stated": false,
+      "qrp_flags": [],
+      "confidence": "medium"
+    }}
   ]
 }}
 
-IMPORTANT: The claims array must contain plain strings only — one claim per string.
-Do NOT put JSON objects inside the claims array.
-Example of a correct claim string: "The drug reduced tumor size by 40% in mice compared to vehicle controls."
-
- QRP FLAGS TO ACTIVELY CHECK 
-- p-value suspicious clustering (e.g. p = 0.048 or p = 0.049) → flag as possible p-hacking
-- Outcome in abstract not mentioned in introduction → flag as possible HARKing
-- Directionality stated ("increased", "reduced") without a quantified value → flag
-- No sample size stated for any experimental claim → flag
-- No statistical test named → flag
-- No control group mentioned → flag
-- Blinding not reported for in vivo or clinical claims → flag
+IMPORTANT: 
+- Each claim MUST be a full JSON object with all required fields
+- claim_id: Use format "claim_1", "claim_2", etc.
+- claim_type: Must be one of: "empirical", "theoretical", "experimental", "computational", "methodological"
+- section_source: Must be one of: "abstract", "introduction", "methods", "results", "discussion", "conclusion"
+- evidence_strength: Must be one of: "direct", "indirect", "inferred"
+- numerical_values: Array of numeric values mentioned in the claim
+- controls_present: Boolean - true if control group is mentioned
+- blinding_reported: Boolean - true if blinding/randomization reported
+- biological_replicates_stated: Boolean - true if sample size/replicates mentioned
+- qrp_flags: Array of questionable research practice flags (empty if none detected)
+- confidence: String - "high", "medium", or "low" based on clarity and evidence
 
 Now extract all scientific claims from the paper text provided.
 """

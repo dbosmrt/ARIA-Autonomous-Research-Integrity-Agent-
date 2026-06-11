@@ -30,7 +30,6 @@ def claim_extractor_node(state: ReprCheckState) -> dict:
         HumanMessage(content=f"Here is the paper to analyze:\n\n{full_text}"),
     ])
 
-    print(response)
     return {
         "claims": response.claims,
         "paper_meta": {
