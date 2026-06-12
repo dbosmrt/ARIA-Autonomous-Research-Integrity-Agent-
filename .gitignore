@@ -27,3 +27,6 @@ Thumbs.db
 #chache files
 .idea
 .vscode
+
+#testing 
+test_data/
