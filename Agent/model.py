@@ -11,6 +11,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_nvidia_ai_endpoints import ChatNVIDIA 
 
 try:
     from dotenv import load_dotenv
@@ -20,7 +21,7 @@ try:
 except ImportError:
     pass
 
-def _get_api_key() -> str:
+def _get_google_api_key() -> str:
 
     key = os.getenv("GOOGLE_API_KEY", "")
     if not key:
@@ -29,12 +30,22 @@ def _get_api_key() -> str:
         )
     return key
 
+def _get_nvidia_api_key() -> str:
+
+    key = os.getenv("NVIDIA_NIM_KEY", "")
+    if not key:
+        raise ValueError(
+            "NVIDIA_API_KEY is not set. Add it to .env or set as environment variable."
+        )
+    return key
+
+
 @lru_cache
 def get_gemini_pro() -> ChatGoogleGenerativeAI:
 
     return ChatGoogleGenerativeAI(
         model = "gemini-2.5-pro",
-        google_api_key = _get_api_key(),
+        google_api_key = _get_google_api_key(),
         temperature=0.2,
         max_output_tokens=8192,
     )
@@ -43,13 +54,18 @@ def get_gemini_pro() -> ChatGoogleGenerativeAI:
 def get_gemini_flash() -> ChatGoogleGenerativeAI:
     return ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
-        google_api_key=_get_api_key(),
+        google_api_key=_get_google_api_key(),
         temperature=0.1,
-        max_output_tokens=10000,
+        max_output_tokens=100000,
     )
 
-def get_model_for_role(role:str) -> ChatGoogleGenerativeAI:
-    pro_roles = {"judge", "repro_checker", "gitlab_ci", "report_generator"}
-    if role in pro_roles:
-        return get_gemini_pro()
-    return get_gemini_flash()
+
+
+def get_nemotron3super() -> ChatNVIDIA:
+    return ChatNVIDIA(
+        model="nvidia/llama-3.3-nemotron-super-49b-v1",
+        api_key=_get_nvidia_api_key(),
+        temperature=0.6,
+        top_p=0.95,
+        max_tokens=100000,
+    )

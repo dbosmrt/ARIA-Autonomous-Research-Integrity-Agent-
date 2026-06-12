@@ -151,7 +151,7 @@ graph LR
     end
 
     subgraph AGENTS["Agent Nodes"]
-        NODES["9 specialist nodes"]
+        NODES["7 specialist nodes"]
     end
 
     subgraph INFRA["Google Cloud"]
@@ -159,7 +159,7 @@ graph LR
     end
 
     subgraph TOOLS["Tool Layer"]
-        TL["GitLab · Stats · Search · Chemistry · KG"]
+        TL["Stats · Search · Chemistry"]
     end
 
     ENTRY -->|"imports graph.compile_graph()"| ENGINE
@@ -233,8 +233,6 @@ graph TD
         REPRO["repro_checker.py"]
         STATS["stats_agent.py"]
         LIT["literature_agent.py"]
-        KG["kg_agent.py"]
-        GITLAB["gitlab_sandbox.py"]
         WETLAB["wetlab_agent.py"]
     end
 
@@ -249,14 +247,10 @@ graph TD
     ORCH -->|"add_conditional_edges<br/>_route_to_agents()"| REPRO
     ORCH -->|"conditional"| STATS
     ORCH -->|"conditional"| LIT
-    ORCH -->|"conditional"| KG
-    ORCH -->|"conditional"| GITLAB
     ORCH -->|"conditional"| WETLAB
     REPRO -->|"add_edge"| JUDGE
     STATS -->|"add_edge"| JUDGE
     LIT -->|"add_edge"| JUDGE
-    KG -->|"add_edge"| JUDGE
-    GITLAB -->|"add_edge"| JUDGE
     WETLAB -->|"add_edge"| JUDGE
     JUDGE -->|"_should_retry() -> retry"| ORCH
     JUDGE -->|"_should_retry() -> generate_report"| REPORT
@@ -264,7 +258,6 @@ graph TD
 
     style ORCH fill:#e8f5e9,stroke:#2e7d32
     style JUDGE fill:#fff3e0,stroke:#e65100
-    style GITLAB fill:#fce4ec,stroke:#c62828
       </pre>
     </section>
 
@@ -293,8 +286,6 @@ graph LR
         N_REP["repro_checker.py"]
         N_STA["stats_agent.py"]
         N_LIT["literature_agent.py"]
-        N_KG["kg_agent.py"]
-        N_GL["gitlab_sandbox.py"]
         N_WL["wetlab_agent.py"]
         N_JDG["judge.py"]
         N_RPT["report_generator.py"]
@@ -316,13 +307,6 @@ graph LR
 
     N_LIT -->|"get_gemini_flash()"| LLM
     N_LIT -->|"AgentResult, AuditEntry"| STATE
-
-    N_KG -->|"get_gemini_flash()"| LLM
-    N_KG -->|"AgentResult, AuditEntry"| STATE
-
-    N_GL -->|"get_gemini_pro()"| LLM
-    N_GL -->|"AgentResult, AuditEntry"| STATE
-    N_GL -->|"GITLAB_CI_GEN_*"| P_CI
 
     N_WL -->|"get_gemini_flash()"| LLM
     N_WL -->|"AgentResult, AuditEntry"| STATE
@@ -348,16 +332,12 @@ graph LR
     subgraph NODES["Agent Nodes"]
         N_STA["stats_agent.py"]
         N_LIT["literature_agent.py"]
-        N_KG["kg_agent.py"]
-        N_GL["gitlab_sandbox.py"]
         N_WL["wetlab_agent.py"]
     end
 
     subgraph TOOLS["tools/"]
         T_STATS["stats_tools.py<br/><i>detect_p_hacking<br/>compute_power<br/>validate_test</i>"]
         T_SEARCH["search_tools.py<br/><i>semantic_scholar_search<br/>tavily_search</i>"]
-        T_KG["kg_tools.py<br/><i>add_triple<br/>find_contradictions</i>"]
-        T_GL["gitlab_tools.py<br/><i>create_project<br/>create_file<br/>trigger_pipeline<br/>poll_pipeline<br/>create_issue</i>"]
         T_CHEM["chemistry_tools.py<br/><i>pubchem_lookup<br/>chembl_search</i>"]
     end
 
@@ -365,30 +345,19 @@ graph LR
         SCIPY["scipy / numpy"]
         SS["Semantic Scholar API"]
         TAVILY["Tavily API"]
-        NX["NetworkX graph"]
-        GLAPI["GitLab API<br/><i>python-gitlab</i>"]
-        GIT["git clone<br/><i>GitPython</i>"]
         PCHEM["PubChem API<br/><i>pubchempy</i>"]
         CHEMBL["ChEMBL API"]
     end
 
     N_STA -->|"detect_p_hacking()"| T_STATS
     N_LIT -->|"semantic_scholar_search()"| T_SEARCH
-    N_KG -->|"add_triple(), find_contradictions()"| T_KG
-    N_GL -->|"create_project(), create_file(),<br/>trigger_pipeline(), poll_pipeline(),<br/>create_issue()"| T_GL
-    N_GL -->|"git.Repo.clone_from()"| GIT
     N_WL -->|"pubchem_lookup()"| T_CHEM
 
     T_STATS -->|"scipy.stats"| SCIPY
     T_SEARCH -->|"httpx GET"| SS
     T_SEARCH -->|"TavilyClient"| TAVILY
-    T_KG -->|"nx.MultiDiGraph"| NX
-    T_GL -->|"gitlab.Gitlab()"| GLAPI
     T_CHEM -->|"pcp.get_compounds()"| PCHEM
     T_CHEM -->|"new_client.activity"| CHEMBL
-
-    style T_GL fill:#fce4ec,stroke:#c62828
-    style GLAPI fill:#fce4ec,stroke:#c62828
       </pre>
     </section>
 
@@ -436,7 +405,7 @@ graph TD
     subgraph STATE["ARIAState (TypedDict in state.py)"]
         IN["Input Fields<br/><i>paper_id, raw_text,<br/>sections, metadata</i>"]
         EXT["Extraction Fields<br/><i>claims, github_url,<br/>active_agents, paper_type</i>"]
-        RES["Agent Result Fields<br/><i>methodology_verdict<br/>stats_verdict<br/>code_verdict<br/>literature_evidence<br/>kg_contradictions<br/>wetlab_verdict<br/>agent_results +</i>"]
+        RES["Agent Result Fields<br/><i>methodology_verdict<br/>stats_verdict<br/>literature_evidence<br/>wetlab_verdict<br/>agent_results +</i>"]
         AGG["Aggregation Fields<br/><i>retry_count<br/>confidence_score</i>"]
         OUT["Output Fields<br/><i>final_report<br/>audit_trail +</i>"]
     end

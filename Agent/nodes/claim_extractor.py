@@ -5,8 +5,9 @@ Claim extractor node - Uses Gemini Flash to extract testable scientific claims.
 import logging
 from datetime import datetime, timezone 
 
+# pyrefly: ignore [missing-import]
 from langchain_core.messages import HumanMessage, SystemMessage
-from Agent.llm import get_gemini_flash
+from Agent.model import get_nemotron3super
 from Agent.state import ReprCheckState, ExtractionResult
 from Agent.prompts.claim_extraction import(
     CLAIM_EXTRACTION_SYSTEM, CLAIM_EXTRACTION_HUMAN,
@@ -23,7 +24,7 @@ def claim_extractor_node(state: ReprCheckState) -> dict:
         logger.error("raw_text is empty. Make Sure the ingestion Node is running...")
         return {"claims": [], "paper_meta":{}, "audit_trial": []}
     
-    llm = get_gemini_flash().with_structured_output(ExtractionResult)
+    llm = get_nemotron3super().with_structured_output(ExtractionResult)
     response = llm.invoke([
         SystemMessage(content=CLAIM_EXTRACTION_SYSTEM),
         HumanMessage(content=CLAIM_EXTRACTION_HUMAN),

@@ -1,0 +1,11 @@
+research_paradigm: wet_lab
+subdiscipline: molecular_biology
+paper_section: results, methods, discussion
+total claims: 3
+
+[1] claim_id='claim_1' claim_text='6-Benzylaminopurine (17.6 μM) + Gibberellic acid (1.0 μM) is the most effective hormone combination for shoot regeneration in Meizotropis pellita.' claim_type=<ClaimType.EXPERIMENTAL: 'experimental'> section_source='methods/results' evidence_strength=<EvidenceStrength.DIRECT: 'direct'> supporting_text='II. MATERIALS AND METHODS (C) & III. RESULTS (C)' numerical_values=['17.6 μM', '1.0 μM'] controls_present=True blinding_reported=False biological_replicates_stated=False qrp_flags=['No replicates stated'] confidence='medium'
+
+[2] claim_id='claim_2' claim_text='Indole-3-butyric acid (4.9 μM) is effective for root regeneration in in vitro micro-propagated Meizotropis pellita.' claim_type=<ClaimType.EXPERIMENTAL: 'experimental'> section_source='methods/results' evidence_strength=<EvidenceStrength.DIRECT: 'direct'> supporting_text='II. MATERIALS AND METHODS (D) & implied in RESULTS' numerical_values=['4.9 μM'] controls_present=False blinding_reported=False biological_replicates_stated=False qrp_flags=['No controls, replicates stated'] confidence='low'
+
+[3] claim_id='claim_3' claim_text='RAPD analysis shows genetic fidelity between in vitro regenerated and wild Meizotropis pellita plants, with 30 monomorphic bands out of 45 scorable bands across 6 primers.' claim_type=<ClaimType.EXPERIMENTAL: 'experimental'> section_source='results' evidence_strength=<EvidenceStrength.DIRECT: 'direct'> supporting_text='III. RESULTS (F)' numerical_values=['30', '45', '6'] controls_present=True blinding_reported=False biological_replicates_stated=False qrp_flags=['No replicates stated'] confidence='medium'
+

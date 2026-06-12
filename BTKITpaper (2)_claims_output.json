@@ -1,0 +1,230 @@
+{
+  "paper_section": "results, methods, discussion",
+  "research_paradigm": "wet_lab",
+  "subdiscipline": "plant_molecular_biology",
+  "total_claims_extracted": 12,
+  "claims": [
+    {
+      "claim_id": "claim_1",
+      "claim_text": "Seeds of M. pellita germinate in 2-3 weeks on MS basal medium under dark incubation.",
+      "claim_type": "experimental",
+      "section_source": "methods",
+      "evidence_strength": "direct",
+      "supporting_text": "Seeds started germinating after 2-3 weeks under incubation in dark on culture racks.",
+      "numerical_values": [
+        "2-3 weeks"
+      ],
+      "controls_present": false,
+      "blinding_reported": false,
+      "biological_replicates_stated": false,
+      "qrp_flags": [
+        "lack of replicates"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "claim_id": "claim_2",
+      "claim_text": "Whole plant generation from seeds is achieved in 25-30 days under 40µmol m^-2 s^-1 fluorescent light at 25 ± 2°C.",
+      "claim_type": "experimental",
+      "section_source": "methods",
+      "evidence_strength": "direct",
+      "supporting_text": "Whole plant generation was achieved after 25-30 days of incubation...",
+      "numerical_values": [
+        "25-30 days",
+        "40µmol m^-2 s^-1",
+        "25 ± 2°C"
+      ],
+      "controls_present": false,
+      "blinding_reported": false,
+      "biological_replicates_stated": false,
+      "qrp_flags": [
+        "lack of replicates"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "claim_id": "claim_3",
+      "claim_text": "2,4-D (9.06 μM) alone induces callus in 62.5% of explants, while 2,4-D (9.06μM) + 2-iP (7.38 μM) induces in 50%.",
+      "claim_type": "experimental",
+      "section_source": "results",
+      "evidence_strength": "direct",
+      "supporting_text": "TABLE II",
+      "numerical_values": [
+        "9.06 μM",
+        "7.38 μM",
+        "62.5%",
+        "50%"
+      ],
+      "controls_present": false,
+      "blinding_reported": false,
+      "biological_replicates_stated": true,
+      "qrp_flags": [],
+      "confidence": "high"
+    },
+    {
+      "claim_id": "claim_4",
+      "claim_text": "BAP (17.6 μM) + GA3 (1.0 μM) is the most effective combination for shoot regeneration in M. pellita.",
+      "claim_type": "experimental",
+      "section_source": "abstract",
+      "evidence_strength": "direct",
+      "supporting_text": "6-Benzylaminopurine (17.6 μM) + Giberellic acid (1.0 μM) for shoot regeneration...",
+      "numerical_values": [
+        "17.6 μM",
+        "1.0 μM"
+      ],
+      "controls_present": false,
+      "blinding_reported": false,
+      "biological_replicates_stated": false,
+      "qrp_flags": [
+        "lack of replicates",
+        "no control mentioned"
+      ],
+      "confidence": "low"
+    },
+    {
+      "claim_id": "claim_5",
+      "claim_text": "Shoot length reaches 7 cm after 30 days of shoot induction with BAP + GA3.",
+      "claim_type": "experimental",
+      "section_source": "results",
+      "evidence_strength": "direct",
+      "supporting_text": "TABLE III",
+      "numerical_values": [
+        "7 cm",
+        "30 days"
+      ],
+      "controls_present": false,
+      "blinding_reported": false,
+      "biological_replicates_stated": false,
+      "qrp_flags": [
+        "lack of replicates"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "claim_id": "claim_6",
+      "claim_text": "IBA at 4.9 μM induces root formation in in vitro generated shoots of M. pellita.",
+      "claim_type": "experimental",
+      "section_source": "methods",
+      "evidence_strength": "direct",
+      "supporting_text": "Indole-3-butyric acid (4.9 μM) for root regeneration...",
+      "numerical_values": [
+        "4.9 μM"
+      ],
+      "controls_present": false,
+      "blinding_reported": false,
+      "biological_replicates_stated": false,
+      "qrp_flags": [
+        "lack of replicates",
+        "no control mentioned"
+      ],
+      "confidence": "low"
+    },
+    {
+      "claim_id": "claim_7",
+      "claim_text": "CTAB method effectively isolates DNA from juvenile leaves of M. pellita with high quality (A260/A280 ratio not specified but implied as good).",
+      "claim_type": "methodological",
+      "section_source": "methods",
+      "evidence_strength": "indirect",
+      "supporting_text": "DNA was isolated using CTAB method...",
+      "numerical_values": [],
+      "controls_present": false,
+      "blinding_reported": false,
+      "biological_replicates_stated": false,
+      "qrp_flags": [
+        "lack of specificity"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "claim_id": "claim_8",
+      "claim_text": "RAPD analysis using 10 primers yields 45 scorable bands, with 30 monomorphic and 15 polymorphic bands between in vitro and wild M. pellita plants.",
+      "claim_type": "experimental",
+      "section_source": "results",
+      "evidence_strength": "direct",
+      "supporting_text": "TABLE IV",
+      "numerical_values": [
+        "10 primers",
+        "45 bands",
+        "30 monomorphic",
+        "15 polymorphic"
+      ],
+      "controls_present": true,
+      "blinding_reported": false,
+      "biological_replicates_stated": false,
+      "qrp_flags": [
+        "lack of replicates"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "claim_id": "claim_9",
+      "claim_text": "OPA-09 primer shows the maximum number of monomorphic loci (7 out of 10 bands).",
+      "claim_type": "experimental",
+      "section_source": "results",
+      "evidence_strength": "direct",
+      "supporting_text": "TABLE IV",
+      "numerical_values": [
+        "7 monomorphic loci"
+      ],
+      "controls_present": true,
+      "blinding_reported": false,
+      "biological_replicates_stated": false,
+      "qrp_flags": [
+        "lack of replicates"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "claim_id": "claim_10",
+      "claim_text": "OPBH-09 primer exhibits the highest polymorphism (50%) between in vitro and wild plant DNA.",
+      "claim_type": "experimental",
+      "section_source": "results",
+      "evidence_strength": "direct",
+      "supporting_text": "TABLE IV",
+      "numerical_values": [
+        "50% polymorphism"
+      ],
+      "controls_present": true,
+      "blinding_reported": false,
+      "biological_replicates_stated": false,
+      "qrp_flags": [
+        "lack of replicates"
+      ],
+      "confidence": "medium"
+    },
+    "claim_id": "claim_11",
+    "claim_text": "The developed in vitro regeneration protocol can be used for large-scale multiplication of M. pellita.",
+    "claim_type": "methodological",
+    "section_source": "discussion",
+    "evidence_strength": "inferred",
+    "supporting_text": "in vitro regeneration protocol of Meizotropis pellita from seeds has been developed for large scale multiplication...",
+    "numerical_values": [],
+    "controls_present": false,
+    "blinding_reported": false,
+    "biological_replicates_stated": false,
+    "qrp_flags": [
+      "inference without direct evidence"
+    ],
+    "confidence": "low"
+  },
+  {
+    "claim_id": "claim_12",
+    "claim_text": "RAPD markers confirm genetic stability between in vitro regenerated and wild M. pellita plants, with 30 monomorphic bands indicating clonal fidelity.",
+    "claim_type": "experimental",
+    "section_source": "results",
+    "evidence_strength": "direct",
+    "supporting_text": "TABLE IV and discussion on genetic stability",
+    "numerical_values": [
+      "30 monomorphic bands"
+    ],
+    "controls_present": true,
+    "blinding_reported": false,
+    "biological_replicates_stated": false,
+    "qrp_flags": [
+      "lack of replicates",
+      "interpretation of monomorphic bands as sole evidence for clonal fidelity"
+    ],
+    "confidence": "medium"
+  }
+]
+}

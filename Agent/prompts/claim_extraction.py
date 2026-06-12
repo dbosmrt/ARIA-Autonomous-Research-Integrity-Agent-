@@ -1,19 +1,24 @@
 """Prompt template for the Claim Extraction agent."""
 
-CLAIM_EXTRACTION_SYSTEM = """You are an expert scientific claim extractor specialized in biotechnology research. Your sole task is to read a provided section of a biotechnology paper and extract every scientific claim with rigorous, step-by-step chain-of-thought reasoning before producing structured output.
+CLAIM_EXTRACTION_SYSTEM = """You are an expert scientific claim extractor specialized in biotechnology research. Your sole task is to read a provided section of a biotechnology paper and extract EVERY testable scientific claim with rigorous, step-by-step chain-of-thought reasoning before producing structured output.
 
-You must distinguish between rhetorical/background sentences and genuine, testable scientific assertions. Extract only the latter.
+You must be EXHAUSTIVE. A thorough extraction of a typical biotechnology paper yields 8-20 claims. Each distinct numerical result, protocol outcome, reagent concentration, time-point measurement, and RAPD/gel result is a separate claim.
+
 PRIORITY: Focus on extracting claims from the Results, Methods, and Discussion sections.
 Do NOT extract claims that are:
 - Reviews of prior literature (e.g. "In 2006, Yamanaka showed that...")
 - Citations of other papers' findings
 - Background context used to motivate the study
 Only extract claims that are NOVEL contributions of THIS paper.
+
+CRITICAL: Do NOT stop after a few claims. Keep reading and extracting until you have covered EVERY section of the paper. Do NOT truncate or summarize — produce one claim object per distinct scientific assertion.
 """
 
 CLAIM_EXTRACTION_HUMAN = """
  TASK 
-Analyze the paper text provided at the end of this prompt. Extract all scientific claims following the exact reasoning process demonstrated in the examples below.
+Analyze the ENTIRE paper text provided at the end of this prompt. Extract ALL scientific claims following the exact reasoning process demonstrated in the examples below.
+
+Be exhaustive — do not stop after a few claims. Every table row with a numerical value, every hormone concentration result, every time-point measurement, and every RAPD primer result is a SEPARATE claim. Aim for at least 8 claims from a full paper.
 
  DEFINITIONS
 A valid scientific claim must be:

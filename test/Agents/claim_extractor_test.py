@@ -3,12 +3,13 @@ test_pipeline.py
 Tests ingestion + claim extraction end to end.
 
 Usage:
-    python test_pipeline.py path/to/paper.pdf
-    python test_pipeline.py path/to/paper.md
+    python claim_extractor_test.py path/to/paper.pdf
+    python claim_extractor_test.py path/to/paper.md
 """
 
 import sys
 import os
+import json
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
@@ -29,6 +30,7 @@ def run(file_path: str):
 
     claims = state.get("claims", [])
     paper_meta = state.get("paper_meta", {})
+    extraction_result = state.get("extraction_result", {})
 
     print(f"\nPaper Meta:")
     print(f"  paradigm    : {paper_meta.get('research_paradigm')}")
@@ -38,17 +40,13 @@ def run(file_path: str):
     print(f"\nTotal claims: {len(claims)}")
     print("="*60)
     for i, claim in enumerate(claims, 1):
-        print(f"[{i}] {claim}")
+        c = claim if isinstance(claim, dict) else claim.model_dump()
+        print(f"[{i}] {c.get('claim_text', claim)}")
 
-    # Save to file
-    output_path = file_path.replace(".md", "_claims.txt").replace(".pdf", "_claims.txt")
+    # Save to JSON
+    output_path = file_path.replace(".md", "_claims_output.json").replace(".pdf", "_claims_output.json")
     with open(output_path, "w", encoding="utf-8") as f:
-        f.write(f"research_paradigm: {paper_meta.get('research_paradigm')}\n")
-        f.write(f"subdiscipline: {paper_meta.get('subdiscipline')}\n")
-        f.write(f"paper_section: {paper_meta.get('paper_section')}\n")
-        f.write(f"total claims: {len(claims)}\n\n")
-        for i, claim in enumerate(claims, 1):
-            f.write(f"[{i}] {claim}\n\n")
+        json.dump(extraction_result, f, indent=2, ensure_ascii=False)
     print(f"\nClaims saved to: {output_path}")
 
 if __name__ == "__main__":
