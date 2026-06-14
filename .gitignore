@@ -30,3 +30,6 @@ Thumbs.db
 
 #testing 
 test_data/
+
+# Claude files
+claude.md  
