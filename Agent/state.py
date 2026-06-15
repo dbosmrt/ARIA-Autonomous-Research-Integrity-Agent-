@@ -6,7 +6,7 @@ from __future__ import annotations
 import operator
 from datetime import datetime, timezone 
 from enum import Enum
-from typing import Annotated, Literal, Optional, TypedDict
+from typing import Annotated, List, Literal, Optional, TypedDict, Dict, Any 
 from pydantic import BaseModel, Field
 
 # Enums
@@ -69,6 +69,19 @@ class ExtractionResult(BaseModel):
     total_claims_extracted: int 
     claims: list[Claim] 
     
+class StatisticalExtractionResult(BaseModel):
+    """
+    Structured output from the Nemotron LLM for statistical claim extraction.
+    """
+    statistical_claims: List[StatisticalClaim] = Field(
+        default_factory=list,
+        description="List of extracted and parsed statistical claims."
+    )
+    extracted_raw_values: Dict[str, List[Any]] = Field(
+        default_factory=dict,
+        description="Raw numerical values extracted by the LLM (e.g., p-values, CI bounds)."
+    )
+
 class DimensionScore(BaseModel):
     """Score for a single reproducibility dimension."""
     dimension: str
@@ -87,6 +100,7 @@ class StatisticalClaim(BaseModel):
     """A statistical claim extracted from the paper."""
     test_name: str
     p_value: Optional[float] = None
+    degrees_of_freedom: Optional[str] = None
     confidence_interval: Optional[str] = None
     effect_size: Optional[float] = None
     sample_size: Optional[int] = None
@@ -255,10 +269,14 @@ class ReprCheckState(TypedDict):
     sections: dict  # {section_name: text}
     metadata: dict  # PaperMetadata as dict
 
-    #  Extraction 
-    claims: list  # list of Claim dicts
+    #  Extraction
+    claims: list[Claim] # list of Claim objects
     paper_meta: dict #LLM output : research paradigm, subsdiscipline, paper section.
     github_url: str
+
+    # Statistics Agent Output
+    statistical_claims: list[StatisticalClaim]
+    extracted_statistical_values: Dict[str, List[Any]]
 
     # Routing
     active_agents: list  # which agents to activate

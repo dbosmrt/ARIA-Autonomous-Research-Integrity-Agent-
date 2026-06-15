@@ -9,13 +9,11 @@ import logging
 from abc import ABC, abstractmethod
 from Agent.state import ReprCheckState
 from Agent.Tools.ingestion_tool import DoclingIngestor, MarkDownLoader
-from datetime import datetime, timezone 
+from datetime import datetime, timezone
+from Agent.logging_config import setup_logging, get_agent_logger
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
+setup_logging()
+logger = get_agent_logger("ingestion")
 
 #node 
 def ingestion_node(state: ReprCheckState) -> dict:

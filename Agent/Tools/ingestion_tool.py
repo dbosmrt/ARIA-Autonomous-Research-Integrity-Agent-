@@ -2,12 +2,10 @@ import logging
 from abc import ABC, abstractmethod
 from langchain_docling.loader import DoclingLoader, ExportType
 from langchain_community.document_loaders import UnstructuredMarkdownLoader
+from Agent.logging_config import setup_logging, get_agent_logger
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
+setup_logging()
+logger = get_agent_logger("ingestion_tool")
 
 
 class BasicDocumentIngestor(ABC):

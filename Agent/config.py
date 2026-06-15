@@ -6,11 +6,13 @@ Loads via Google cloud secret manager, environment variables, .env file.
 """
 
 import os
-import logging 
+import logging
+from Agent.logging_config import setup_logging, get_agent_logger
 from functools import lru_cache
 from dotenv import load_dotenv
 
-logger = logging.getLogger(__name__)
+setup_logging()
+logger = get_agent_logger("Config")
 
 load_dotenv()
 

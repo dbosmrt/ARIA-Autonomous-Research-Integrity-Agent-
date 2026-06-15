@@ -3,7 +3,7 @@ Claim extractor node - Uses Gemini Flash to extract testable scientific claims.
 """
 
 import logging
-from datetime import datetime, timezone 
+from datetime import datetime, timezone
 
 # pyrefly: ignore [missing-import]
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -12,8 +12,10 @@ from Agent.state import ReprCheckState, ExtractionResult
 from Agent.prompts.claim_extraction import(
     CLAIM_EXTRACTION_SYSTEM, CLAIM_EXTRACTION_HUMAN,
 )
+from Agent.logging_config import setup_logging, get_agent_logger
 
-logger = logging.getLogger(__name__)
+setup_logging()
+logger = get_agent_logger("claim_extractor")
 
 def claim_extractor_node(state: ReprCheckState) -> dict:
     start = datetime.now(timezone.utc)

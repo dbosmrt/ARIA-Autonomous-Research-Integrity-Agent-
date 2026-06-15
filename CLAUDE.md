@@ -84,7 +84,7 @@ The orchestrator combines results from all agents to produce a comprehensive rep
 - Literature consistency assessment relies on external search capabilities
 
 ## Future Enhancements
-- Support additional paper formats (e.g., Word, LaTeX)
+- Support additional paper forclmats (e.g., Word, LaTeX)
 - Implement direct code repository analysis
 - Add automated verification of statistical methods
 - Integrate with academic databases for better literature consistency checks

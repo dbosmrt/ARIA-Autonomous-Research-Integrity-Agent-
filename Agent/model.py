@@ -2,9 +2,10 @@
 This will be Gemini model factory
 Will provide pre-configured LLM instances for differenct agent roles:
 
-Uses two models:
+Uses three models:
     - Gemini 2.5 Pro : Complex reasoning(judge, repro checker)
     - Gemini 2.5 Flash : High throughput (stats, wetlab, extraction)
+    - Nemotron 3 Super : Advanced reasoning (specialized tasks)
 """
 
 import os
