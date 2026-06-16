@@ -1,4 +1,3 @@
-import logging
 from abc import ABC, abstractmethod
 from langchain_docling.loader import DoclingLoader, ExportType
 from langchain_community.document_loaders import UnstructuredMarkdownLoader

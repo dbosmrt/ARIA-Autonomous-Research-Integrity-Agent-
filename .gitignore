@@ -33,3 +33,6 @@ test_data/
 
 # Claude files
 claude.md  
+
+#logs
+logs/ 

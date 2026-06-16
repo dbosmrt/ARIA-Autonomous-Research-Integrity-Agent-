@@ -49,7 +49,7 @@ def _setup_dev_logging(logger: logging.Logger) -> None:
             show_level= True,
             show_path=True,
         )
-        console_formatter = logging.Formatter("%(name)s-%(messages)s-%(levelnames)s")
+        console_formatter = logging.Formatter("%(name)s-%(message)s-%(levelname)s")
         console_handler.setFormatter(console_formatter)
         logger.addHandler(console_handler)
 
@@ -71,7 +71,7 @@ def _setup_dev_logging(logger: logging.Logger) -> None:
         # Fallback if rich is not available
         handler = logging.StreamHandler(sys.stdout)
         formatter = logging.Formatter(
-            "%(asctimes)s | %(levelname)-8s | %(name)s = %(message)s",
+            "%(asctime)s | %(levelname)-8s | %(name)s = %(message)s",
             datefmt="%H:%M:%S",
         )
         handler.setFormatter(formatter)

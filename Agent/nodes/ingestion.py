@@ -5,8 +5,6 @@
 Ingestion node — loads PDF or Markdown into raw_text in state.
 """
 
-import logging
-from abc import ABC, abstractmethod
 from Agent.state import ReprCheckState
 from Agent.Tools.ingestion_tool import DoclingIngestor, MarkDownLoader
 from datetime import datetime, timezone

@@ -66,7 +66,7 @@ def run(file_path: str):
             }
 
         print(f"[{i}] {c.get('claim_text', 'N/A')}")
-        print(f      Type: {c.get('claim_type', 'N/A')} | Section: {c.get('section_source', 'N/A')}")
+        print(f"  Type: {c.get('claim_type', 'N/A')} | Section: {c.get('section_source', 'N/A')}")
 
     # Save claims to JSON (like the existing test)
     output_path = file_path.replace(".md", "_claims_output.json").replace(".pdf", "_claims_output.json")
@@ -100,13 +100,13 @@ def run(file_path: str):
             }
 
         print(f"[{i}] Claim ID: {c.get('claim_id', 'N/A')}")
-        print(f      Test: {c.get('test_type', 'N/A')} ({c.get('test_statistic_type', 'N/A')} = {c.get('test_statistic_value', 'N/A')})")
-        print(f      p-value: {c.get('p_value', 'N/A')}")
+        print(f"  Test: {c.get('test_type', 'N/A')} ({c.get('test_statistic_type', 'N/A')} = {c.get('test_statistic_value', 'N/A')})")
+        print(f"  p-value: {c.get('p_value', 'N/A')}")
 
     if extracted_statistical_values:
         print(f"\n✓ Extracted statistical values:")
         for key, values in extracted_statistical_values.items():
-            print(f      {key}: {values}")
+            print(f"  {key}: {values}")
 
     # Save statistics output
     stats_output_path = file_path.replace(".md", "_stats_output.json").replace(".pdf", "_stats_output.json")
@@ -122,9 +122,9 @@ def run(file_path: str):
     print(f"PIPELINE TEST COMPLETED SUCCESSFULLY!")
     print(f"{'='*60}")
     print(f"Summary:")
-    print(f  - Raw text characters: {len(raw_text)}")
-    print(f  - Claims extracted: {len(claims)}")
-    print(f  - Statistical claims extracted: {len(statistical_claims)}")
+    print(f"  - Raw text characters: {len(raw_text)}")
+    print(f"  - Claims extracted: {len(claims)}")
+    print(f"  - Statistical claims extracted: {len(statistical_claims)}")
     print(f"{'='*60}")
 
 if __name__ == "__main__":

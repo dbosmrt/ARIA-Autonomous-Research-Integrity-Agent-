@@ -37,11 +37,16 @@ def statistical_claim_extractor_node(state: ReprCheckState) -> Dict[str, Any]:
 
     llm = get_nemotron3super().with_structured_output(StatisticalExtractionResult)
 
+    # Escape any literal braces in dynamic content so .format() doesn't
+    # misinterpret them as format placeholders and raise a KeyError.
+    safe_claims_json = claims_json.replace("{", "{{").replace("}", "}}")
+    safe_raw_text = raw_text.replace("{", "{{").replace("}", "}}")
+
     response: StatisticalExtractionResult = llm.invoke([
         SystemMessage(content=STATISTICAL_EXTRACTION_SYSTEM),
         HumanMessage(content=STATISTICAL_EXTRACTION_HUMAN.format(
-            extracted_claims=claims_json,
-            raw_text=raw_text
+            extracted_claims=safe_claims_json,
+            raw_text=safe_raw_text
         )),
     ])
 
