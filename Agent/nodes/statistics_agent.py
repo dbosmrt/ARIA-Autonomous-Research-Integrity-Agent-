@@ -1,5 +1,5 @@
 from typing import Dict, Any, List
-
+import json
 # LangChain / Google Generative AI imports
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -7,8 +7,8 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from Agent.model import get_nemotron3super
 from Agent.state import ReprCheckState, Claim, StatisticalExtractionResult
 from Agent.prompts.statistics_prompt import (
-    STATISTICAL_TEMPLATE_SYSTEM,
-    STATISTICAL_TEMPLATE_HUMAN,
+    STATISTICAL_EXTRACTION_SYSTEM,
+    STATISTICAL_EXTRACTION_HUMAN,
 )
 from Agent.logging_config import setup_logging, get_agent_logger
 
@@ -32,17 +32,17 @@ def statistical_claim_extractor_node(state: ReprCheckState) -> Dict[str, Any]:
         return {"statistical_claims": [], "extracted_statistical_values": {}}
 
     # Format claims as JSON for the LLM
-    import json
     claims_json = json.dumps([claim.dict() for claim in claims], indent=2)
+
 
     llm = get_nemotron3super().with_structured_output(StatisticalExtractionResult)
 
     response: StatisticalExtractionResult = llm.invoke([
         SystemMessage(content=STATISTICAL_EXTRACTION_SYSTEM),
-        HumanMessage(content=STATISTICAL_EXTRACTION_HUMAN),
-        HumanMessage(content=f"""Extracted Claims: {claims_json}
-
-Raw Text: {raw_text}"""),
+        HumanMessage(content=STATISTICAL_EXTRACTION_HUMAN.format(
+            extracted_claims=claims_json,
+            raw_text=raw_text
+        )),
     ])
 
     # Future: Placeholder for statistical tool calling integration

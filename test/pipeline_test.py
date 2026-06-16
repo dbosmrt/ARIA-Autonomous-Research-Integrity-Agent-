@@ -44,9 +44,9 @@ def run(file_path: str):
     extraction_result = state.get("extraction_result", {})
 
     print(f"✓ Paper Meta:")
-    print(f    paradigm    : {paper_meta.get('research_paradigm', 'N/A')}")
-    print(f    subdiscipline: {paper_meta.get('subdiscipline', 'N/A')}")
-    print(f    section     : {paper_meta.get('paper_section', 'N/A')}")
+    print(f"  paradigm    : {paper_meta.get('research_paradigm', 'N/A')}")
+    print(f"  subdiscipline: {paper_meta.get('subdiscipline', 'N/A')}")
+    print(f"  section     : {paper_meta.get('paper_section', 'N/A')}")
 
     print(f"✓ Total claims extracted: {len(claims)}")
     print("="*60)
