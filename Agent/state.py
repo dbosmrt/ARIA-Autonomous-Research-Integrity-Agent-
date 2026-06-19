@@ -150,6 +150,36 @@ class StatsVerdict(BaseModel):
     flags: list[str] = Field(default_factory=list)
 
 
+
+#Tool Calling Agent Models
+class ToolCall(BaseModel):
+    """A single tool invocation planned by the tool calling agent."""
+    tool_name: str
+    arguments: Dict[str, Any] = Field(default_factory=dict)
+    reasoning: str = ""
+
+class ToolCallResult(BaseModel):
+    """Result of a single tool execution."""
+    tool_name: str
+    success: bool = True
+    result: Any = None
+    error: Optional[str] = None
+    execution_time_ms: float = 0
+
+class ToolCallingPlan(BaseModel):
+    """The LLM's plan for which tools to call."""
+    data_understanding: str = ""  # what the LLM thinks the data is
+    source_agent: str = ""        # which agent produced this data
+    tool_calls: List[ToolCall] = Field(default_factory=list)
+
+class ToolAgentResponse(BaseModel):
+    """Final response from the Tool Calling Agent after tool execution."""
+    plan: ToolCallingPlan = Field(default_factory=ToolCallingPlan)
+    tool_results: List[ToolCallResult] = Field(default_factory=list)
+    synthesis: str = ""  # LLM's summary after seeing tool results
+    flags: List[str] = Field(default_factory=list)
+
+
 class LiteratureEvidence(BaseModel):
     """Evidence from related papers via Agent Builder RAG."""
     source_paper: str
@@ -323,6 +353,11 @@ class ReprCheckState(TypedDict):
     literature_evidence: list
     kg_contradictions: list
     wetlab_verdict: dict
+
+    # Tool Calling Agent Output
+    tool_call_plan: list          # the LLM's tool selection plan
+    tool_execution_results: list  # raw results from each tool execution
+    tool_agent_summary: str       # final synthesized summary from the agent
 
     # Aggregation 
     retry_count: int

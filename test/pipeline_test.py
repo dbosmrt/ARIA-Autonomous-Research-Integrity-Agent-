@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from Agent.nodes.ingestion import ingestion_node
 from Agent.nodes.claim_extractor import claim_extractor_node
 from Agent.nodes.statistics_agent import statistical_claim_extractor_node
+from Agent.nodes.tool_calling_agent import tool_calling_agent_node
 
 def run(file_path: str):
     print(f"\n{'='*60}")
@@ -118,6 +119,51 @@ def run(file_path: str):
         json.dump(stats_output, f, indent=2, ensure_ascii=False)
     print(f"\n✓ Statistics saved to: {stats_output_path}")
 
+    # Step 4: Tool Calling Agent
+    print(f"\n{'='*20} STEP 4: TOOL CALLING AGENT {'='*20}")
+    state.update(tool_calling_agent_node(state))
+
+    tool_plan = state.get("tool_call_plan", [])
+    tool_results = state.get("tool_execution_results", [])
+    tool_summary = state.get("tool_agent_summary", "")
+
+    if tool_plan:
+        plan = tool_plan[0] if isinstance(tool_plan[0], dict) else tool_plan[0]
+        print(f"✓ Data understanding: {plan.get('data_understanding', 'N/A')}")
+        print(f"  Source agent: {plan.get('source_agent', 'N/A')}")
+        print(f"  Tools planned: {len(plan.get('tool_calls', []))}")
+    else:
+        print("✓ No tool calls planned")
+
+    print(f"✓ Tools executed: {len(tool_results)}")
+    print("="*60)
+    for i, result in enumerate(tool_results, 1):
+        status = "✓" if result.get("success") else "✗"
+        print(f"[{i}] {status} {result.get('tool_name', 'N/A')} ({result.get('execution_time_ms', 0):.1f}ms)")
+        if result.get("error"):
+            print(f"    Error: {result['error']}")
+        elif isinstance(result.get("result"), dict):
+            flag = result["result"].get("flag")
+            if flag:
+                print(f"    ⚠ FLAG: {flag}")
+
+    if tool_summary:
+        print(f"\n✓ Synthesis summary:")
+        # Print first 500 chars of synthesis
+        preview = tool_summary[:500]
+        print(f"  {preview}{'...' if len(tool_summary) > 500 else ''}")
+
+    # Save tool calling output
+    tool_output_path = file_path.replace(".md", "_tool_agent_output.json").replace(".pdf", "_tool_agent_output.json")
+    tool_output = {
+        "tool_call_plan": tool_plan,
+        "tool_execution_results": tool_results,
+        "tool_agent_summary": tool_summary,
+    }
+    with open(tool_output_path, "w", encoding="utf-8") as f:
+        json.dump(tool_output, f, indent=2, ensure_ascii=False, default=str)
+    print(f"\n✓ Tool agent output saved to: {tool_output_path}")
+
     print(f"\n{'='*60}")
     print(f"PIPELINE TEST COMPLETED SUCCESSFULLY!")
     print(f"{'='*60}")
@@ -125,6 +171,8 @@ def run(file_path: str):
     print(f"  - Raw text characters: {len(raw_text)}")
     print(f"  - Claims extracted: {len(claims)}")
     print(f"  - Statistical claims extracted: {len(statistical_claims)}")
+    print(f"  - Tools executed: {len(tool_results)}")
+    print(f"  - Flags raised: {sum(1 for r in tool_results if r.get('success') and isinstance(r.get('result'), dict) and r['result'].get('flag'))}")
     print(f"{'='*60}")
 
 if __name__ == "__main__":
