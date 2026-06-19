@@ -6,8 +6,8 @@ from __future__ import annotations
 import operator
 from datetime import datetime, timezone 
 from enum import Enum
-from typing import Annotated, List, Literal, Optional, TypedDict, Dict, Any 
-from pydantic import BaseModel, Field
+from typing import Annotated, List, Literal, Optional, TypedDict, Dict, Any, Union
+from pydantic import BaseModel, Field, RootModel
 
 # Enums
 class ClaimType(str, Enum):
@@ -69,19 +69,6 @@ class ExtractionResult(BaseModel):
     total_claims_extracted: int 
     claims: list[Claim] 
     
-class StatisticalExtractionResult(BaseModel):
-    """
-    Structured output from the Nemotron LLM for statistical claim extraction.
-    """
-    statistical_claims: List[StatisticalClaim] = Field(
-        default_factory=list,
-        description="List of extracted and parsed statistical claims."
-    )
-    extracted_raw_values: Dict[str, List[Any]] = Field(
-        default_factory=dict,
-        description="Raw numerical values extracted by the LLM (e.g., p-values, CI bounds)."
-    )
-
 class DimensionScore(BaseModel):
     """Score for a single reproducibility dimension."""
     dimension: str
@@ -97,14 +84,60 @@ class MethodologyVerdict(BaseModel):
     missing_details: list[str] = Field(default_factory=list)
 
 class StatisticalClaim(BaseModel):
-    """A statistical claim extracted from the paper."""
-    test_name: str
+    """A statistical claim extracted from the paper.
+
+    Fields are aligned with the JSON schema requested by the statistical
+    extraction prompt. Both raw and parsed p-value fields are kept to
+    preserve formatting from the paper while enabling numeric checks.
+
+    For papers that report only descriptive statistics (review articles,
+    population studies, meta-analyses), the descriptive_* and proportion
+    fields capture percentages, medians, IQR, and similar metrics.
+    """
+    claim_id: str = ""
+    # test name (legacy) and explicit test type expected by the prompt
+    test_name: Optional[str] = None
+    test_type: Optional[str] = None
+
+    # Variance reporting (SD / SEM / Not Reported)
+    variance_metric: Optional[str] = None
+
+    # Test statistic details
+    test_statistic_type: Optional[str] = None
+    test_statistic_value: Optional[float] = None
+
+    # p-value: numeric parsed value (if available) and raw reported string
     p_value: Optional[float] = None
-    degrees_of_freedom: Optional[str] = None
+    reported_p_value: Optional[str] = None
+
+    # Degrees of freedom may be reported as a string or as an array (e.g., [2, 27])
+    degrees_of_freedom: Optional[Union[str, List[int]]] = None
+
     confidence_interval: Optional[str] = None
     effect_size: Optional[float] = None
-    sample_size: Optional[int] = None
+    stated_sample_size_n: Optional[int] = None
     section: str = ""
+
+    # --- Descriptive / review-paper statistics ---
+    # Free-text value exactly as reported (e.g., "82.6%", "median 2")
+    descriptive_value: Optional[str] = None
+    # Metric type: proportion, percentage, count, median, IQR, mean, range, score
+    descriptive_metric: Optional[str] = None
+    # Central-tendency measure if applicable (mean / median)
+    central_tendency: Optional[str] = None
+    # Spread measure and value (e.g., "IQR", "P25-P75")
+    spread_metric: Optional[str] = None
+    spread_value: Optional[str] = None
+    # Proportion as a string, e.g., "38/46"
+    proportion: Optional[str] = None
+    # Brief context explaining what the number refers to
+    context: Optional[str] = None
+
+class StatisticalExtractionResult(RootModel[List[StatisticalClaim]]):
+    """
+    Structured output from the Nemotron LLM for statistical claim extraction.
+    The statistical prompt produces a top-level JSON array of claim objects.
+    """
 
 class StatsVerdict(BaseModel):
     """Result from the Stats Agent (Gemini Flash + scipy)."""

@@ -50,18 +50,10 @@ def statistical_claim_extractor_node(state: ReprCheckState) -> Dict[str, Any]:
         )),
     ])
 
-    # Future: Placeholder for statistical tool calling integration
-    # At this point, 'response.statistical_claims' and 'response.extracted_raw_values'
-    # contain the structured statistical data which can be passed to external tools
-    # for further validation or analysis.
-    # Example:
-    # from Agent.Tools.statistical_validator import validate_statistics
-    # validation_results = validate_statistics(response.statistical_claims, response.extracted_raw_values)
-    # return_dict["statistical_validation_results"] = validation_results
 
-
-    logger.info(f"Nemotron extracted {len(response.statistical_claims)} statistical claims.")
+    statistical_claims = response.root
+    logger.info(f"Nemotron extracted {len(statistical_claims)} statistical claims.")
     return {
-        "statistical_claims": response.statistical_claims,
-        "extracted_statistical_values": response.extracted_raw_values,
+        "statistical_claims": statistical_claims,
+        "extracted_statistical_values": {},
     }
