@@ -35,6 +35,15 @@ class PipelineStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
+class PaperType(str, Enum):
+    QUANTITATIVE_EXPERIMENTAL = "quantitative_experimental"
+    OMICS = "omics"
+    METHODOLOGICAL = "methodological"
+    CLINICAL_TRANSLATIONAL = "clinical_translational"
+    COMPUTATIONAL_BIOINFORMATICS = "computational_bioinformatics"
+    REVIEW_META_ANALYSIS = "review_meta_analysis"
+    HYBRID = "hybrid"
+
 # Core data models
 class PaperMetadata(BaseModel):
     title: str
@@ -150,6 +159,35 @@ class StatsVerdict(BaseModel):
     flags: list[str] = Field(default_factory=list)
 
 
+# Wet-Lab Agent Models 
+
+class ReagentInfo(BaseModel):
+    """A single reagent or material extracted from the paper."""
+    name: str
+    category: str  # antibody, chemical, cell_line, plasmid, organism, kit, enzyme, etc.
+    identifier: Optional[str] = None  # RRID, CAS number, catalog number
+    vendor: Optional[str] = None
+    concentration: Optional[str] = None
+    verified: Optional[bool] = None  # set by external tool later
+
+class ProtocolDetail(BaseModel):
+    """A protocol / method step extracted from the paper."""
+    technique: str  # e.g., "Western blot", "PCR", "cell culture"
+    description: str  # brief description of what was done
+    parameters_reported: list[str] = Field(default_factory=list)
+    parameters_missing: list[str] = Field(default_factory=list)
+    reference_protocol: Optional[str] = None  # if they cite a standard protocol
+    assessment: str = ""  # descriptive assessment of reproducibility of this step
+
+class PaperClassification(BaseModel):
+    """Paper type classification produced by the wet-lab agent."""
+    primary_type: str  # one of PaperType values
+    secondary_type: Optional[str] = None  # for hybrid papers
+    reasoning: str = ""
+    key_indicators: list[str] = Field(default_factory=list)
+    experimental_techniques: list[str] = Field(default_factory=list)
+
+
 
 #Tool Calling Agent Models
 class ToolCall(BaseModel):
@@ -205,13 +243,100 @@ class CodeVerdict(BaseModel):
 
 
 class WetlabVerdict(BaseModel):
-    """Result from the Wet Lab agent."""
-    reagents_verified: int = 0
+    """Comprehensive wet-lab reproducibility extraction from the wet-lab agent.
+    Includes paper classification, reagent tracking, protocol details,
+    experimental design assessment, and data transparency checks.
+    """
+    # Paper classification (embedded)
+    classification: Optional[PaperClassification] = None
+
+    # Reagent tracking
+    reagents: list[ReagentInfo] = Field(default_factory=list)
+    reagents_with_identifiers: int = 0
     reagents_total: int = 0
-    compounds_found: list[str] = Field(default_factory=list)
-    compounds_missing: list[str] = Field(default_factory=list)
-    overall_score: float = Field(ge=0, le=100, default=0)
+
+    # Protocol details
+    protocols: list[ProtocolDetail] = Field(default_factory=list)
+
+    # Controls & experimental design
+    positive_controls_present: Optional[bool] = None
+    negative_controls_present: Optional[bool] = None
+    biological_replicates: Optional[int] = None
+    technical_replicates: Optional[int] = None
+    blinding_reported: Optional[bool] = None
+    randomization_reported: Optional[bool] = None
+
+    # Sample handling
+    sample_size_justified: Optional[bool] = None
+    inclusion_exclusion_criteria: Optional[bool] = None  # for clinical papers
+
+    # Data transparency
+    raw_data_available: Optional[bool] = None
+    code_available: Optional[bool] = None
+    protocol_deposited: Optional[bool] = None  # protocols.io, etc.
+
+    # Omics-specific
+    data_deposited_geo_sra: Optional[bool] = None
+    accession_numbers: list[str] = Field(default_factory=list)
+
+    # Descriptive assessment (no numeric rubrics)
+    methodology_assessment: str = ""  # narrative on methodology rigor
+    strengths: list[str] = Field(default_factory=list)
+    weaknesses: list[str] = Field(default_factory=list)
+    flags: list[str] = Field(default_factory=list)
     summary: str = ""
+
+
+class WetlabExtractionResult(BaseModel):
+    """Structured output wrapper for the wet-lab agent LLM call.
+    This is what the Nemotron LLM returns via with_structured_output().
+    """
+    classification: PaperClassification
+    reagents: list[ReagentInfo] = Field(default_factory=list)
+    protocols: list[ProtocolDetail] = Field(default_factory=list)
+    positive_controls_present: Optional[bool] = None
+    negative_controls_present: Optional[bool] = None
+    biological_replicates: Optional[int] = None
+    technical_replicates: Optional[int] = None
+    blinding_reported: Optional[bool] = None
+    randomization_reported: Optional[bool] = None
+    sample_size_justified: Optional[bool] = None
+    inclusion_exclusion_criteria: Optional[bool] = None
+    raw_data_available: Optional[bool] = None
+    code_available: Optional[bool] = None
+    protocol_deposited: Optional[bool] = None
+    data_deposited_geo_sra: Optional[bool] = None
+    accession_numbers: list[str] = Field(default_factory=list)
+    methodology_assessment: str = ""
+    strengths: list[str] = Field(default_factory=list)
+    weaknesses: list[str] = Field(default_factory=list)
+    flags: list[str] = Field(default_factory=list)
+    summary: str = ""
+
+
+#  Reproducibility Evaluator Models
+
+class ReproducibilityEvaluation(BaseModel):
+    """Final descriptive reproducibility judgment from the evaluator LLM.
+    All assessments are narrative — no numeric rubric scores.
+    """
+    verdict: str  # one of ReproVerdict values
+    confidence: str  # "high", "medium", "low"
+
+    # Descriptive assessments per dimension
+    methodology_rigor: str = ""  # narrative on methodology
+    statistical_validity: str = ""  # narrative on statistics
+    reagent_transparency: str = ""  # narrative on reagent reporting
+    protocol_completeness: str = ""  # narrative on protocol detail
+    data_availability: str = ""  # narrative on data/code sharing
+    controls_and_design: str = ""  # narrative on controls, blinding, randomization
+
+    # Synthesis
+    strengths: list[str] = Field(default_factory=list)
+    weaknesses: list[str] = Field(default_factory=list)
+    critical_gaps: list[str] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
+    overall_narrative: str = ""  # the final summary paragraph
 
 
 class Contradiction(BaseModel):
@@ -345,6 +470,9 @@ class ReprCheckState(TypedDict):
     active_agents: list  # which agents to activate
     paper_type: str  # "computational", "experimental", "theoretical", etc.
 
+    # Paper Classification (from wetlab agent)
+    paper_classification: dict  # PaperClassification as dict
+
     #  Agent Results (fan-in via operator.add)
     agent_results: Annotated[list, operator.add]
     methodology_verdict: dict
@@ -353,6 +481,9 @@ class ReprCheckState(TypedDict):
     literature_evidence: list
     kg_contradictions: list
     wetlab_verdict: dict
+
+    # Reproducibility Evaluation (from evaluator)
+    reproducibility_evaluation: dict  # ReproducibilityEvaluation as dict
 
     # Tool Calling Agent Output
     tool_call_plan: list          # the LLM's tool selection plan

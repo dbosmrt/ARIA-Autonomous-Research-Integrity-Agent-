@@ -2,10 +2,8 @@
 Claim extractor node - Uses Gemini Flash to extract testable scientific claims.
 """
 
-import logging
 from datetime import datetime, timezone
 
-# pyrefly: ignore [missing-import]
 from langchain_core.messages import HumanMessage, SystemMessage
 from Agent.model import get_nemotron3super
 from Agent.state import ReprCheckState, ExtractionResult
