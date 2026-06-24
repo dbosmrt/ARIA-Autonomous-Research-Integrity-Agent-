@@ -6,7 +6,6 @@ Loads via Google cloud secret manager, environment variables, .env file.
 """
 
 import os
-import logging
 from Agent.logging_config import setup_logging, get_agent_logger
 from functools import lru_cache
 from dotenv import load_dotenv
@@ -59,10 +58,6 @@ class Settings:
         self.gcp_project_id: str = os.getenv("GCP_PROJECT_ID", "")
         self.gcp_location: str = os.getenv("GCP_LOCATION", "us-central1")
 
-        self.gitlab_url: str = os.getenv("GITLAB_URL", "https://gitlab.com")
-        self.gitlab_token:str = os.getenv("GITLAB_TOKEN", "")
-
-        self.tavily_api_key: str = os.getenv("TAVILY_API_KEY", "")
 
         self.agent_builder_datastore_id: str = os.getenv(
             "AGENT_BUILDER_DATASTORE_ID", ""

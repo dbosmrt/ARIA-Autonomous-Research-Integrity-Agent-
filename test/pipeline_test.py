@@ -17,6 +17,8 @@ from Agent.nodes.ingestion import ingestion_node
 from Agent.nodes.claim_extractor import claim_extractor_node
 from Agent.nodes.statistics_agent import statistical_claim_extractor_node
 from Agent.nodes.tool_calling_agent import tool_calling_agent_node
+from Agent.nodes.wetlab_agent import wetlab_agent_node
+from Agent.nodes.reproducibility_evaluator import reproducibility_evaluator_node
 
 def run(file_path: str):
     print(f"\n{'='*60}")
@@ -164,6 +166,106 @@ def run(file_path: str):
         json.dump(tool_output, f, indent=2, ensure_ascii=False, default=str)
     print(f"\n✓ Tool agent output saved to: {tool_output_path}")
 
+    # Step 5: Wet Lab Agent (Classification + Extraction)
+    print(f"\n{'='*20} STEP 5: WET LAB AGENT {'='*20}")
+    state.update(wetlab_agent_node(state))
+
+    paper_classification = state.get("paper_classification", {})
+    paper_type = state.get("paper_type", "unknown")
+    wetlab_verdict = state.get("wetlab_verdict", {})
+
+    print(f"✓ Paper Type: {paper_type}")
+    if paper_classification:
+        print(f"  Reasoning: {paper_classification.get('reasoning', 'N/A')[:200]}")
+        indicators = paper_classification.get('key_indicators', [])
+        if indicators:
+            print(f"  Indicators: {', '.join(indicators[:5])}")
+        techniques = paper_classification.get('experimental_techniques', [])
+        if techniques:
+            print(f"  Techniques: {', '.join(techniques[:5])}")
+
+    if wetlab_verdict:
+        reagents = wetlab_verdict.get('reagents', [])
+        protocols = wetlab_verdict.get('protocols', [])
+        flags = wetlab_verdict.get('flags', [])
+        print(f"✓ Reagents extracted: {len(reagents)} ({wetlab_verdict.get('reagents_with_identifiers', 0)} with IDs)")
+        print(f"✓ Protocols extracted: {len(protocols)}")
+        for i, proto in enumerate(protocols[:5], 1):
+            print(f"  [{i}] {proto.get('technique', 'N/A')}: {proto.get('assessment', 'N/A')[:100]}")
+        if flags:
+            print(f"✓ Flags: {', '.join(flags[:5])}")
+        summary = wetlab_verdict.get('summary', '')
+        if summary:
+            print(f"✓ Summary: {summary[:300]}")
+    print("="*60)
+
+    # Save wetlab output
+    wetlab_output_path = file_path.replace(".md", "_wetlab_output.json").replace(".pdf", "_wetlab_output.json")
+    wetlab_output = {
+        "paper_classification": paper_classification,
+        "paper_type": paper_type,
+        "wetlab_verdict": wetlab_verdict,
+    }
+    with open(wetlab_output_path, "w", encoding="utf-8") as f:
+        json.dump(wetlab_output, f, indent=2, ensure_ascii=False, default=str)
+    print(f"✓ Wet lab output saved to: {wetlab_output_path}")
+
+    # Step 6: Reproducibility Evaluator
+    print(f"\n{'='*20} STEP 6: REPRODUCIBILITY EVALUATOR {'='*20}")
+    state.update(reproducibility_evaluator_node(state))
+
+    repro_eval = state.get("reproducibility_evaluation", {})
+
+    if repro_eval:
+        print(f"✓ Verdict: {repro_eval.get('verdict', 'N/A')}")
+        print(f"  Confidence: {repro_eval.get('confidence', 'N/A')}")
+        print(f"\n  Methodology Rigor:")
+        print(f"    {repro_eval.get('methodology_rigor', 'N/A')[:200]}")
+        print(f"  Statistical Validity:")
+        print(f"    {repro_eval.get('statistical_validity', 'N/A')[:200]}")
+        print(f"  Reagent Transparency:")
+        print(f"    {repro_eval.get('reagent_transparency', 'N/A')[:200]}")
+        print(f"  Protocol Completeness:")
+        print(f"    {repro_eval.get('protocol_completeness', 'N/A')[:200]}")
+        print(f"  Data Availability:")
+        print(f"    {repro_eval.get('data_availability', 'N/A')[:200]}")
+        print(f"  Controls & Design:")
+        print(f"    {repro_eval.get('controls_and_design', 'N/A')[:200]}")
+
+        strengths = repro_eval.get('strengths', [])
+        weaknesses = repro_eval.get('weaknesses', [])
+        critical_gaps = repro_eval.get('critical_gaps', [])
+        recommendations = repro_eval.get('recommendations', [])
+
+        if strengths:
+            print(f"\n  Strengths ({len(strengths)}):")
+            for s in strengths[:5]:
+                print(f"    ✓ {s}")
+        if weaknesses:
+            print(f"  Weaknesses ({len(weaknesses)}):")
+            for w in weaknesses[:5]:
+                print(f"    ✗ {w}")
+        if critical_gaps:
+            print(f"  Critical Gaps ({len(critical_gaps)}):")
+            for g in critical_gaps[:5]:
+                print(f"    ⚠ {g}")
+        if recommendations:
+            print(f"  Recommendations ({len(recommendations)}):")
+            for r in recommendations[:5]:
+                print(f"    → {r}")
+
+        narrative = repro_eval.get('overall_narrative', '')
+        if narrative:
+            print(f"\n  Overall Narrative:")
+            print(f"    {narrative[:500]}")
+    print("="*60)
+
+    # Save reproducibility evaluation
+    repro_output_path = file_path.replace(".md", "_reproducibility_eval.json").replace(".pdf", "_reproducibility_eval.json")
+    with open(repro_output_path, "w", encoding="utf-8") as f:
+        json.dump(repro_eval, f, indent=2, ensure_ascii=False, default=str)
+    print(f"✓ Reproducibility evaluation saved to: {repro_output_path}")
+
     print(f"\n{'='*60}")
     print(f"PIPELINE TEST COMPLETED SUCCESSFULLY!")
     print(f"{'='*60}")
@@ -173,6 +275,10 @@ def run(file_path: str):
     print(f"  - Statistical claims extracted: {len(statistical_claims)}")
     print(f"  - Tools executed: {len(tool_results)}")
     print(f"  - Flags raised: {sum(1 for r in tool_results if r.get('success') and isinstance(r.get('result'), dict) and r['result'].get('flag'))}")
+    print(f"  - Paper type: {paper_type}")
+    print(f"  - Reagents extracted: {len(wetlab_verdict.get('reagents', []))}")
+    print(f"  - Protocols extracted: {len(wetlab_verdict.get('protocols', []))}")
+    print(f"  - Reproducibility verdict: {repro_eval.get('verdict', 'N/A')}")
     print(f"{'='*60}")
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from Agent.model import get_gemini_flash
 from Agent.state import (
-    ReprCheckState, Claim, StatisticalClaim,
+    ReprCheckState,
     ToolCallingPlan, ToolCallResult, ToolAgentResponse,
 )
 from Agent.prompts.tool_calling_prompt import (
