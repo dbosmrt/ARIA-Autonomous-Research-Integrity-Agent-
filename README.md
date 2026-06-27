@@ -192,8 +192,6 @@ graph TD
     JUDGE -->|"_should_retry() -> generate_report"| REPORT
     REPORT -->|"add_edge"| END_NODE(("END"))
 
-    style ORCH fill:#e8f5e9,stroke:#2e7d32
-    style JUDGE fill:#fff3e0,stroke:#e65100
 ```
 
 **Key design**: The Orchestrator classifies papers into one of 7 types and conditionally activates only relevant agents:
@@ -260,8 +258,6 @@ graph LR
     N_RPT -->|"AuditEntry"| STATE
     N_RPT -->|"REPORT_TEMPLATE_*"| P_RPT
 
-    style LLM fill:#e3f2fd,stroke:#1565c0
-    style STATE fill:#f3e5f5,stroke:#6a1b9a
 ```
 
 | Agent | LLM Used | Focus Area |
@@ -352,10 +348,6 @@ graph TD
 
     LLM -.->|"_get_api_key() -> os.getenv"| CFG
 
-    style GEMINI fill:#e8f5e9,stroke:#2e7d32
-    style AB fill:#e3f2fd,stroke:#1565c0
-    style SM fill:#fff3e0,stroke:#e65100
-    style CL fill:#f3e5f5,stroke:#6a1b9a
 ```
 
 **Configuration cascading strategy:**
@@ -398,8 +390,6 @@ graph TD
     JDG["judge"] -->|"reads agent_results<br/>writes confidence_score"| AGG
     RPT["report_generator"] -->|"reads everything<br/>writes final_report"| OUT
 
-    style RES fill:#e8f5e9,stroke:#2e7d32
-    style STATE fill:#fafafa,stroke:#333
 ```
 
 **Key design — Fan-In Aggregation:**
