@@ -92,6 +92,12 @@ class MethodologyVerdict(BaseModel):
     summary: str = ""
     missing_details: list[str] = Field(default_factory=list)
 
+class ClassificationResult(BaseModel):
+    paper_type: str = ""
+    agents_to_route: list[str] = Field(default_factory=list)
+    routing_reasoning: str = ""
+    analysis_scope: str = ""
+
 class StatisticalClaim(BaseModel):
     """A statistical claim extracted from the paper.
 

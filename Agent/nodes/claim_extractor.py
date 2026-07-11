@@ -30,8 +30,13 @@ def claim_extractor_node(state: ReprCheckState) -> dict:
         HumanMessage(content=CLAIM_EXTRACTION_HUMAN),
         HumanMessage(content=f"Here is the paper to analyze:\n\n{full_text}"),
     ])
-
-    return {
+    elapsed = (datetime.now(timezone.utc) - start).total_seconds()*1000
+    logger.info(f"Claim extraction completed in {elapsed:.2f} ms") 
+    
+    if isinstance(response, dict):
+        return response
+    else:
+        return {
         "claims": response.claims,
         "paper_meta": {
             "research_paradigm": response.research_paradigm,
